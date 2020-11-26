@@ -14,7 +14,8 @@ export class AuthUtils {
   // Create User
   public async createUser(userDetail: Json): Promise<ResponseBuilder> {
     const newUser = await mysql.insert(Tables.USER, userDetail);
-    return ResponseBuilder.data({ id: newUser.insertId });
+    console.log('newUser-->'+JSON.stringify(newUser))
+    return ResponseBuilder.data({ id: newUser });
   }
 
   public async updateUser(uid: number , userInfo: Json): Promise<ResponseBuilder> {
@@ -54,8 +55,7 @@ export class AuthUtils {
           UserTable.FIRSTNAME,
           UserTable.EMAIL,
           UserTable.PASSWORD,
-          UserTable.IS_ENABLE,
-          UserTable.ZIPCODE
+          UserTable.IS_ENABLE
         ],
         `${UserTable.EMAIL} = ?
         AND ${UserTable.IS_ENABLE} = 1

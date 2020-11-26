@@ -23,16 +23,10 @@ export class UserModel extends Model {
   @IsNotEmpty()
   public firstname: string;
 
-  @IsNotEmpty()
-  public deviceId: string;
-
   @IsEmail()
   @IsNotEmpty()
   @Validate(IsEmailAlreadyExistConstraint, {
     message: 'USER_EMAIL_EXIST',
-  })
-  @Validate(IsEmailAlreadyExistStoreConstraint, {
-    message: 'USER_EMAIL_EXIST_STORE',
   })
   public email: string;
 
@@ -51,7 +45,6 @@ export class UserModel extends Model {
     this.firstname = firstname;
     this.email = email;
     this.password= password;
-    this.deviceId=deviceId;
   }
 }
 
@@ -80,20 +73,12 @@ export class AuthModel extends Model {
   @IsNotEmpty()
   public password: string;
 
-  @IsNotEmpty()
-  public devicetype: string;
-  
-  @IsNotEmpty()
-  public deviceId: number;
-
   constructor(body: any) {
     super();
-    const {email, password, deviceId, devicetype } = body;
+    const {email, password } = body;
 
     this.email = email;
     this.password = password;
-    this.deviceId = deviceId;
-    this.devicetype=devicetype;
   }
 }
 

@@ -1,12 +1,12 @@
 {
-  "name": "ixopp-nodejs",
+  "name": "testcase-nodejs",
   "version": "1.0.0",
   "description": "oto link",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "tsc": "tsc",
     "lint": "tslint -c tslint.json 'src/**/*.ts'",
-    "start": "tsc --watch & nodemon --inspect dist",
+    "start": "tsc && node dist/index.js",
     "build": "tsc && mkdir -p uploads && mkdir -p dist/templates && cp -R src/templates/* dist/templates",
     "build-dev": "tsc && mkdir -p uploads && mkdir -p dist/templates && cp -R src/templates/* dist/templates",
     "build-stage": "tsc && mkdir -p uploads && mkdir -p dist/templates && cp -R src/templates/* dist/templates",
@@ -66,6 +66,7 @@
     "node-uuid": "^1.4.8",
     "nodemailer": "^6.4.6",
     "path": "^0.12.7",
+    "pm2": "^4.5.0",
     "randexp": "^0.5.3",
     "reflect-metadata": "^0.1.13",
     "request": "^2.88.2",

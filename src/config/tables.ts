@@ -10,6 +10,7 @@ export class Tables {
   public static readonly USER = 'users';
   public static readonly STATIC_CONTENT = 'staticcontent';
   public static readonly DEVICE = 'devices';
+  public static readonly PROJECT = 'projects';
   public static readonly STORE = 'store';
   public static readonly STOREOWNER = 'storeowner';
   public static readonly CATEGORY = 'categories';
@@ -304,7 +305,7 @@ export enum AttachmentThumbTable {
 
 // Users table's fields
 export enum UserTable {
-  ID = 'uid',
+  ID = 'id',
   FIRSTNAME = 'firstname',
   LASTNAME = 'lastname',
   EMAIL = 'email',

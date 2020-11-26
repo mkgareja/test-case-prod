@@ -12,9 +12,9 @@ export class IsEmailAlreadyExistConstraint implements ValidatorConstraintInterfa
   public async validate(email: string, args: any) {
     let condition = `email = '${email}'`;
     if (args.object.id) {
-      condition += ` AND uId != ${args.object.uId}`;
+      condition += ` AND id != ${args.object.id}`;
     }
-    const user = await mysql.first(Tables.USER, ['uId'], condition);
+    const user = await mysql.first(Tables.USER, ['id'], condition);
     if (user) {
       return false;
     }

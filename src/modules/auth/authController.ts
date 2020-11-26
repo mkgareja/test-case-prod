@@ -22,42 +22,27 @@ export class AuthController {
         const uuid = uuidv4();
         const customerData = { customerId: uuid }
         const obj = {
+            id:uuid,
             firstname: req.body.firstname,
             email: req.body.email,
-            password: hash,
-            zipcode: req.body.zipcode,
-            isEnable: 1,
-            isDelete:0,
-            createdAt: new Date()
-        }
-        const deviceObj = {
-            deviceType: req.body.devicetype,
-            deviceToken: req.body.deviceId,
-            createdAt: new Date()
+            password: hash
         }
         // creating user profile
         const result: ResponseBuilder = await this.authUtils.createUser(obj);
 
-        if (result && result.result && result.result.id) {
-            await this.authUtils.updateDeviceInformation({ uId: result.result.id }, deviceId);
+        if (result) {
+            // await this.authUtils.updateDeviceInformation({ uId: result.result.id }, deviceId);
             // JWT token
+            // let deviceId =
             const userDetails = {
-                id:result.result.id,
-                token: Jwt.getAuthToken({ userId: result.result.id, deviceId }),
+                id:uuid,
+                token: Jwt.getAuthToken({ userId: uuid, deviceId:123 }),
                 status:true,
                 firstname:req.body.firstname,
                 email: req.body.email,
                 password: req.body.password,
-                zipcode: req.body.zipcode,
-                devicetype:req.body.devicetype,
-                role:req.body.role,
-                deviceId:req.body.deviceId,
                 msg: req.t('SIGNUP_LOGIN_SUCCESS'),
             };
-            const replaceData = {
-                '{USERNAME}': req.body.firstname
-              };
-            SendEmail.sendRawMail('welcome', replaceData, req.body.email,req.t('WELCOME'));
             res.status(result.code).json(userDetails); // sending only JWT token in response
         } else {
             res.status(result.code).json(result.result); // sending error if any
@@ -90,25 +75,18 @@ export class AuthController {
 
     // Sign in api
     public login = async (req: any, res: Response) => {
-        const deviceId = req.body.deviceId;
+    
         // assign device to this created user
-
-        await this.authUtils.updateDeviceInformation({ uId: req.body._authentication.uid }, deviceId);
-        const obj = {
-            lastLogin: new Date()
-        }
-        await this.authUtils.updateUser(req.body._authentication.uid ,obj);
         const userDetails = {
             status:true,
             msg: req.t('LOGIN_SUCCESS'),
             token: Jwt.getAuthToken({
                 userId: req.body._authentication.uid,
-                deviceId,
+                deviceId:123,
             }),
-            id: req.body._authentication.uid,
+            id: req.body._authentication.id,
             email: req.body._authentication.email,
-            firstname: req.body._authentication.firstname,
-            zipcode: req.body._authentication.zipcode,
+            firstname: req.body._authentication.firstname
         };
         res.status(Constants.SUCCESS_CODE).json(userDetails);
     };
@@ -162,5 +140,10 @@ export class AuthController {
         }else{
             res.status(Constants.NOT_FOUND_CODE).json({ statu:false,msg: req.t('ERR_NO_DATA_FOUND') });
         }
+    };
+
+    public get = async (req: any, res: Response) => {
+        res.status(Constants.SUCCESS_CODE).json({ statu:true,msg: req.t('USER_LOGOUT') });
+        
     };
 }
