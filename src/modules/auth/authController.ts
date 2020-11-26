@@ -24,6 +24,7 @@ export class AuthController {
         const obj = {
             id:uuid,
             firstname: req.body.firstname,
+            lastname: req.body.lastname,
             email: req.body.email,
             password: hash
         }
