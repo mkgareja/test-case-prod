@@ -97,7 +97,7 @@ export class AuthController {
         // checking user is exist or not in DB
         const { email } = req.body;
         let password;
-        password = await this.authUtils.sendEmail( email);
+        password = await this.authUtils.sendEmail(email);
         const result = {
             status:true
         }
@@ -113,7 +113,7 @@ export class AuthController {
         const updateDetails = {
             password: hash,
         };
-        await this.authUtils.updateUserDetails(updateDetails, req._user.uid); // update new password in DB
+        await this.authUtils.updateUserDetails(updateDetails, req._user.id); // update new password in DB
         res.status(Constants.SUCCESS_CODE).json({ msg: req.t('PASSWORD_RESET') });
     };
 
