@@ -11,6 +11,8 @@ export class Tables {
   public static readonly STATIC_CONTENT = 'staticcontent';
   public static readonly DEVICE = 'devices';
   public static readonly PROJECT = 'projects';
+  public static readonly TASKS = 'tasks';
+  public static readonly SUBTASKS = 'subtasks';
   public static readonly STORE = 'store';
   public static readonly STOREOWNER = 'storeowner';
   public static readonly CATEGORY = 'categories';
@@ -351,6 +353,28 @@ export enum ProjectTable {
   CREATED_BY ='createdBy',
   USERID = 'userid',
   TYPE = 'type',
+  DESC = 'description'
+}
+export enum TaskTable {
+  ID = 'id',
+  TITLE = 'title',
+  IS_ENABLE = 'isEnable',
+  IS_DELETE = 'isDelete',
+  CREATED_AT='createdAt',
+  CREATED_BY ='createdBy',
+  PID = 'projectid',
+  DESC = 'description'
+}
+
+export enum SubTaskTable {
+  ID = 'id',
+  TITLE = 'title',
+  IS_ENABLE = 'isEnable',
+  IS_DELETE = 'isDelete',
+  CREATED_AT='createdAt',
+  CREATED_BY ='createdBy',
+  PID = 'projectid',
+  TID = 'taskid',
   DESC = 'description'
 }
 // modules table's fields

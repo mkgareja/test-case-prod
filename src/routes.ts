@@ -5,8 +5,8 @@ import { AuthRoute } from './modules/auth/authRoute';
 import { CMSRoute } from './modules/cms/cmsRoute';
 import { DeviceRoute } from './modules/device/deviceRoute';
 import { ProjectRoute } from './modules/project/projectRoute';
+import { TaskRoute } from './modules/task/taskRoute';
 import { CategoryRoute } from './modules/category/categoryRoute';
-import { ProductRoute } from './modules/product/productRoute';
 import { StoreRoute } from './modules/store/storeRoute';
 import { AnalyticRoute } from './modules/analytic/analyticRoute';
 import { ReviewRoute } from './modules/review/reviewRoute';
@@ -36,10 +36,10 @@ export class Routes {
 
     router.use('/auth', AuthRoute);
     router.use('/projects', ProjectRoute);
+    router.use('/task', TaskRoute);
     router.use('/cms', CMSRoute);
     router.use('/devices', DeviceRoute);
     router.use('/categories', CategoryRoute);
-    router.use('/products', ProductRoute);
     router.use('/store', StoreRoute);
     router.use('/analytics', AnalyticRoute);
     router.use('/review', ReviewRoute);

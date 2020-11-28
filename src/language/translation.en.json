@@ -37,6 +37,8 @@
   "DEVICE_ENTRY_UPDATED": "Device information updated.",
   "DEVICE_NOT_REGISTERED": "Device not registered.",
   "PROJECT_ADDED": "Project added successfully.",
+  "TASK_ADDED": "Task added successfully.",
+  "SUBTASK_ADDED": "Subtask added successfully.",
   "TIME_ADDED": "Time added successfully.",
   "USER_LOGOUT": "Log out successfully.",
   "NOTIFICATION_SETTINGS_UPDATED": "Your notification preferences updated successfully.",
