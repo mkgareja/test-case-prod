@@ -342,6 +342,17 @@ export enum DeviceTable {
   CREATED_BY ='createdBy'
 }
 
+export enum ProjectTable {
+  ID = 'id',
+  NAME = 'name',
+  IS_ENABLE = 'isEnable',
+  IS_DELETE = 'isDelete',
+  CREATED_AT='createdAt',
+  CREATED_BY ='createdBy',
+  USERID = 'userid',
+  TYPE = 'type',
+  DESC = 'description'
+}
 // modules table's fields
 export enum ModuleTable {
   ID = 'id',

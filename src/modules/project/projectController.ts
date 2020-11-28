@@ -1,18 +1,61 @@
 import { Constants } from '../../config/constants';
 import { Request, Response } from 'express';
 import { ProjectUtils } from './projectUtils';
+import { v4 as uuidv4 } from 'uuid';
+import { ResponseBuilder } from '../../helpers/responseBuilder';
 
 export class ProjectController {
     private projectUtils: ProjectUtils = new ProjectUtils();
+    public getProject = async (req: any, res: Response) => {
+        let result = await this.projectUtils.getProjects(req._user.id);
+        if(result){
+            res.status(Constants.SUCCESS_CODE).json({ status: true, data: result });
+        }else{
+            res.status(Constants.NOT_FOUND_CODE).json({ status: false,error: req.t('NO_DATA') });
+        }
+    };
     public addProject = async (req: any, res: Response) => {
-        const deviceObj = {
-            deviceType: req.body.devicetype,
-            deviceToken: req.body.deviceId,
+        const uuid = uuidv4();
+        const projectObj = {
+            id:uuid,
+            name: req.body.name,
+            type: req.body.type,
+            userid:req._user.id,
+            description:req.body.description,
             createdAt: new Date()
         }
         // creating user profile
-        const result = await this.projectUtils.addProject(deviceObj);
-        result.msg = req.t('DEVICE_ADDED');
-        res.status(Constants.SUCCESS_CODE).json({ data: result });
+        const result:any = await this.projectUtils.addProject(projectObj);
+        const msg = req.t('PROJECT_ADDED');
+        res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg, data: result.result.newDevice });
     };
+    public updateProject = async (req: any, res: Response) => {
+        const { id = null } = req.params;
+        const projectObj = {
+            name: req.body.name,
+            type: req.body.type,
+            userid:req._user.id,
+            description:req.body.description
+        }
+        const result:ResponseBuilder = await this.projectUtils.updateProject(id,projectObj);
+        if (result.result.status == true) {
+            result.msg = req.t('REVIEW_UPDATED_SUCCESS');
+            res.status(Constants.SUCCESS_CODE).json(result);
+        } else {
+            res.status(Constants.NOT_FOUND_CODE).json(result);
+        }
+    }
+    public deleteProject = async (req: any, res: Response) => {
+        const { id = null } = req.params;
+        const projectObj = {
+            isDelete:1
+        }
+        const result:ResponseBuilder = await this.projectUtils.updateProject(id,projectObj);
+        if (result.result.status == true) {
+            result.msg = req.t('PROJECT_DELETE_SUCCESS');
+            res.status(Constants.SUCCESS_CODE).json(result);
+        } else {
+            res.status(Constants.NOT_FOUND_CODE).json(result);
+        }
+    }
 }

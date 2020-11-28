@@ -16,15 +16,11 @@ import { Model } from '../../model';
 export class ProjectModel extends Model {
 
   @IsNotEmpty()
-  public devicetype: string;
-  
-  @IsNotEmpty()
-  public deviceId: number;
+  public name: string;
 
   constructor(body: any) {
     super();
-    const { deviceId, devicetype } = body;
-    this.deviceId = deviceId;
-    this.devicetype=devicetype;
+    const { name } = body;
+    this.name=name;
   }
 }

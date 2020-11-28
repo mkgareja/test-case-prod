@@ -82,7 +82,7 @@ export class AuthController {
             status:true,
             msg: req.t('LOGIN_SUCCESS'),
             token: Jwt.getAuthToken({
-                userId: req.body._authentication.uid,
+                userId: req.body._authentication.id,
                 deviceId:123,
             }),
             id: req.body._authentication.id,

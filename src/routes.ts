@@ -4,6 +4,7 @@ import { Constants } from './config/constants';
 import { AuthRoute } from './modules/auth/authRoute';
 import { CMSRoute } from './modules/cms/cmsRoute';
 import { DeviceRoute } from './modules/device/deviceRoute';
+import { ProjectRoute } from './modules/project/projectRoute';
 import { CategoryRoute } from './modules/category/categoryRoute';
 import { ProductRoute } from './modules/product/productRoute';
 import { StoreRoute } from './modules/store/storeRoute';
@@ -34,6 +35,7 @@ export class Routes {
     const router = express.Router();
 
     router.use('/auth', AuthRoute);
+    router.use('/projects', ProjectRoute);
     router.use('/cms', CMSRoute);
     router.use('/devices', DeviceRoute);
     router.use('/categories', CategoryRoute);
