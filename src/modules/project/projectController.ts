@@ -36,7 +36,8 @@ export class ProjectController {
             name: req.body.name,
             type: req.body.type,
             userid:req._user.id,
-            description:req.body.description
+            description:req.body.description,
+            data:JSON.stringify(req.body.data)
         }
         const result:ResponseBuilder = await this.projectUtils.updateProject(id,projectObj);
         if (result.result.status == true) {
