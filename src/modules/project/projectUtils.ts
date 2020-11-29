@@ -18,14 +18,22 @@ export class ProjectUtils {
       return ResponseBuilder.data({ status: false });
     }
   }
-  public async getProjects(id: number) {
+  public async getProjects(id) {
     const result = await mysql.findAll(Tables.PROJECT,
       [ProjectTable.ID,
         ProjectTable.NAME,
         ProjectTable.TYPE,
         ProjectTable.DESC,
-        ProjectTable.DATA,
         ProjectTable.CREATED_AT], `${ProjectTable.IS_DELETE} = 0 AND ${ProjectTable.IS_ENABLE} = 1 and ${ProjectTable.USERID} = ?`, [id]);
+      if (result.length >= 0) {
+        return result;
+      } else {
+        return false;
+      }
+  }
+  public async getTask(id) {
+    const result = await mysql.findAll(Tables.PROJECT,
+      [ProjectTable.DATA], `${ProjectTable.IS_DELETE} = 0 AND ${ProjectTable.IS_ENABLE} = 1 and ${ProjectTable.ID} = ?`, [id]);
       if (result.length >= 0) {
         return result;
       } else {

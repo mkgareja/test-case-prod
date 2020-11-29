@@ -14,6 +14,15 @@ export class ProjectController {
             res.status(Constants.NOT_FOUND_CODE).json({ status: false,error: req.t('NO_DATA') });
         }
     };
+    public getTask = async (req: any, res: Response) => {
+        const { id = null } = req.params;
+        let result = await this.projectUtils.getTask(id);
+        if(result[0].data){
+            res.status(Constants.SUCCESS_CODE).json({ status: true, data: result[0].data });
+        }else{
+            res.status(Constants.NOT_FOUND_CODE).json({ status: false,error: req.t('NO_DATA') });
+        }
+    };
     public addProject = async (req: any, res: Response) => {
         const uuid = uuidv4();
         const projectObj = {
@@ -22,7 +31,6 @@ export class ProjectController {
             type: req.body.type,
             userid:req._user.id,
             description:req.body.description,
-            data:JSON.stringify(req.body.data),
             createdAt: new Date()
         }
         // creating user profile
@@ -36,12 +44,24 @@ export class ProjectController {
             name: req.body.name,
             type: req.body.type,
             userid:req._user.id,
-            description:req.body.description,
-            data:JSON.stringify(req.body.data)
+            description:req.body.description
         }
         const result:ResponseBuilder = await this.projectUtils.updateProject(id,projectObj);
         if (result.result.status == true) {
             result.msg = req.t('REVIEW_UPDATED_SUCCESS');
+            res.status(Constants.SUCCESS_CODE).json(result);
+        } else {
+            res.status(Constants.NOT_FOUND_CODE).json(result);
+        }
+    }
+    public updateTask = async (req: any, res: Response) => {
+        const { id = null } = req.params;
+        const projectObj = {
+            data:JSON.stringify(req.body.data)
+        }
+        const result:ResponseBuilder = await this.projectUtils.updateProject(id,projectObj);
+        if (result.result.status == true) {
+            result.msg = req.t('TASK_ADDED');
             res.status(Constants.SUCCESS_CODE).json(result);
         } else {
             res.status(Constants.NOT_FOUND_CODE).json(result);
