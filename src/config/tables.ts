@@ -352,6 +352,7 @@ export enum ProjectTable {
   CREATED_AT='createdAt',
   CREATED_BY ='createdBy',
   USERID = 'userid',
+  DATA = 'data',
   TYPE = 'type',
   DESC = 'description'
 }

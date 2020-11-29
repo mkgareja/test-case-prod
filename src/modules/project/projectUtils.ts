@@ -24,7 +24,8 @@ export class ProjectUtils {
         ProjectTable.NAME,
         ProjectTable.TYPE,
         ProjectTable.DESC,
-        ProjectTable.CREATED_AT], `${ProjectTable.USERID} = ?`, [id]);
+        ProjectTable.DATA,
+        ProjectTable.CREATED_AT], `${ProjectTable.IS_DELETE} = 0 AND ${ProjectTable.IS_ENABLE} = 1 and ${ProjectTable.USERID} = ?`, [id]);
       if (result.length >= 0) {
         return result;
       } else {

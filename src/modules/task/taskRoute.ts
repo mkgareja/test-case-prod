@@ -23,7 +23,8 @@ router.post('/status/:id',middleware.getUserAuthorized, v.validate(TaskStatusMod
 router.post('/subtask',middleware.getUserAuthorized, v.validate(TaskModel), taskController.addSubTask);
 router.post('/subtask/:id',middleware.getUserAuthorized, taskController.updateSubTask);
 router.post('/subtask/status/:id',middleware.getUserAuthorized, taskController.updateSubTaskStatus);
-// router.delete('/:id',middleware.getUserAuthorized, taskController.deleteProject);
+router.delete('/:id',middleware.getUserAuthorized, taskController.deleteTask);
+router.delete('/subtask/:id',middleware.getUserAuthorized, taskController.deleteSubTask);
 
 // Export the express.Router() instance to be used by server.ts
 export const TaskRoute: Router = router;

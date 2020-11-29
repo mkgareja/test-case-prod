@@ -22,6 +22,7 @@ export class ProjectController {
             type: req.body.type,
             userid:req._user.id,
             description:req.body.description,
+            data:JSON.stringify(req.body.data),
             createdAt: new Date()
         }
         // creating user profile
@@ -45,7 +46,7 @@ export class ProjectController {
             res.status(Constants.NOT_FOUND_CODE).json(result);
         }
     }
-    public deleteProject = async (req: any, res: Response) => {
+    public  deleteProject = async (req: any, res: Response) => {
         const { id = null } = req.params;
         const projectObj = {
             isDelete:1
