@@ -4,7 +4,6 @@ import * as nodemailer from "nodemailer";
 import * as path from "path";
 import { Constants } from "../config/constants";
 import { Log } from "./logger";
-const AWS = require("aws-sdk");
 
 export class SendEmail {
 
@@ -30,37 +29,25 @@ export class SendEmail {
         };
 
         let transportObj;
-
-        AWS.config.update({
-            accessKeyId: process.env.ACCESS_KEY,
-            secretAccessKey: process.env.SECRET_KEY,
-            region:'us-east-1'
-        });
-        
-        transportObj = nodemailer.createTransport({
-            SES: new AWS.SES({
-                apiVersion: '2010-12-01'
+        if (process.env.ENV === Constants.environments.DEVELOPMENT) {
+            transportObj = nodemailer.createTransport({
+                host: process.env.SMTP_HOST,
+                port: process.env.SMTP_PORT,
+                auth: {
+                    user: process.env.SMTP_USER_NAME,
+                    pass: process.env.SMTP_PASSWORD,
+                }
             })
-        });
-        // if (process.env.ENV === Constants.environments.DEVELOPMENT) {
-        //     transportObj = nodemailer.createTransport({
-        //         host: process.env.AWS_SMTP_HOST,
-        //         port: process.env.AWS_SMTP_PORT,
-        //         auth: {
-        //             user: process.env.ACCESS_KEY,
-        //             pass: process.env.SECRET_KEY,
-        //         }
-        //     })
-        // } else {
-        //     transportObj = nodemailer.createTransport({
-        //         host: process.env.AWS_SMTP_HOST,
-        //         port: process.env.AWS_SMTP_PORT,
-        //         auth: {
-        //             user: process.env.ACCESS_KEY,
-        //             pass: process.env.SECRET_KEY,
-        //         }
-        //     })
-        // }
+        } else {
+            transportObj = nodemailer.createTransport({
+                host: process.env.AWS_SMTP_HOST,
+                port: process.env.AWS_SMTP_PORT,
+                auth: {
+                    user: process.env.ACCESS_KEY,
+                    pass: process.env.SECRET_KEY,
+                }
+            })
+        }
 
 
         transportObj.sendMail(mailOptions, (mailSendErr: any, info: any) => {
