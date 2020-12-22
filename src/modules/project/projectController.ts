@@ -67,6 +67,42 @@ export class ProjectController {
             res.status(Constants.NOT_FOUND_CODE).json(result);
         }
     }
+    public addTestRun = async (req: any, res: Response) => {
+        const uuid = uuidv4();
+        const { id = null } = req.params;
+        const tasks = await this.projectUtils.getTask(id);
+
+        const tempObj = {
+            id: uuid,
+            name: req.body.name,
+            userid: req._user.id,
+            projectid: id,
+            data:tasks[0].data,
+            createdAt: new Date()
+        }
+        // creating user profile
+        const result:any = await this.projectUtils.addTestRun(tempObj);
+        const msg = req.t('TEST_RUN_ADDED');
+        res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg, data: result.result.data });
+    }
+    public getTestRun = async (req: any, res: Response) => {
+        const { id = null } = req.params;
+        let result = await this.projectUtils.getTestRun(id);
+        if(result[0].data){
+            res.status(Constants.SUCCESS_CODE).json({ status: true, data: result[0].data });
+        }else{
+            res.status(Constants.NOT_FOUND_CODE).json({ status: false,error: req.t('NO_DATA') });
+        }
+    };
+    public getTestRuns = async (req: any, res: Response) => {
+        const { id = null } = req.params;
+        let result = await this.projectUtils.getTestRuns(id);
+        if(result[0].data){
+            res.status(Constants.SUCCESS_CODE).json({ status: true, data: result });
+        }else{
+            res.status(Constants.NOT_FOUND_CODE).json({ status: false,error: req.t('NO_DATA') });
+        }
+    };
     public  deleteProject = async (req: any, res: Response) => {
         const { id = null } = req.params;
         const projectObj = {

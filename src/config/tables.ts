@@ -12,6 +12,7 @@ export class Tables {
   public static readonly DEVICE = 'devices';
   public static readonly PROJECT = 'projects';
   public static readonly TASKS = 'tasks';
+  public static readonly TESTRUNS = 'testruns';
   public static readonly SUBTASKS = 'subtasks';
   public static readonly STORE = 'store';
   public static readonly STOREOWNER = 'storeowner';
@@ -356,6 +357,19 @@ export enum ProjectTable {
   TYPE = 'type',
   DESC = 'description'
 }
+
+export enum TestrunsTable {
+  ID = 'id',
+  NAME = 'name',
+  IS_ENABLE = 'isEnable',
+  IS_DELETE = 'isDelete',
+  CREATED_AT='createdAt',
+  CREATED_BY ='createdBy',
+  USERID = 'userid',
+  PROJECTID = 'projectid',
+  DATA = 'data'
+}
+
 export enum TaskTable {
   ID = 'id',
   TITLE = 'title',

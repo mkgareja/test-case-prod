@@ -20,6 +20,11 @@ router.post('/task/:id',middleware.getUserAuthorized, projectController.updateTa
 router.get('/task/:id',middleware.getUserAuthorized, projectController.getTask);
 router.post('/:id',middleware.getUserAuthorized, v.validate(ProjectModel), projectController.updateProject);
 router.delete('/:id',middleware.getUserAuthorized, projectController.deleteProject);
+//test run
+router.post('/run/:id',middleware.getUserAuthorized, projectController.addTestRun);
+router.get('/run/:id',middleware.getUserAuthorized, projectController.getTestRun);
+router.get('/result/:id',middleware.getUserAuthorized, projectController.getTestRuns);
+
 
 // Export the express.Router() instance to be used by server.ts
 export const ProjectRoute: Router = router;
