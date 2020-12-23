@@ -26,7 +26,9 @@ export class AuthController {
             firstname: req.body.firstname,
             lastname: req.body.lastname,
             email: req.body.email,
-            password: hash
+            password: hash,
+            organization:req.body.organization,
+            domain:req.body.domain
         }
         // creating user profile
         const result: ResponseBuilder = await this.authUtils.createUser(obj);
