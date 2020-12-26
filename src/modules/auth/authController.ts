@@ -53,7 +53,33 @@ export class AuthController {
             res.status(result.code).json(result.result); // sending error if any
         }
     };
+    public inviteUser = async (req: any, res: Response) => {
+        // delete req.body.deviceId;
+        let salt = bcryptjs.genSaltSync(10);
+        let hash = bcryptjs.hashSync(req.body.password, salt);
 
+        // creating user in SOL CDK
+        const uuid = uuidv4();
+        const obj = {
+            id:uuid,
+            email: req.body.email
+        }
+        // creating user profile
+        const result: ResponseBuilder = await this.authUtils.createUser(obj);
+
+        if (result) {
+            // await this.authUtils.updateDeviceInformation({ uId: result.result.id }, deviceId);
+            // JWT token
+            // let deviceId =
+            const userDetails = {
+                email: req.body.email,
+                msg: req.t('SIGNUP_LOGIN_SUCCESS'),
+            };
+            res.status(result.code).json(userDetails); // sending only JWT token in response
+        } else {
+            res.status(result.code).json(result.result); // sending error if any
+        }
+    };
     // update user
     public updateUser = async (req: any, res: Response) => {
         const obj = {

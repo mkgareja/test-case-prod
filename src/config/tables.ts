@@ -1,4 +1,5 @@
 export class Tables {
+  public static readonly PROJECTUSERS = 'projectUsers';
   public static readonly LOGININFO = 'loginInfo';
   public static readonly SEARCHKEYCOUNT='searchKeyCount';
   public static readonly PAGEVISITCOUNT = 'pageVisitCount';
@@ -357,7 +358,14 @@ export enum ProjectTable {
   TYPE = 'type',
   DESC = 'description'
 }
-
+export enum projectUsersTable {
+  ID = 'id',
+  PROJECTID = 'projectid',
+  IS_ENABLE = 'isEnable',
+  IS_DELETE = 'isDelete',
+  CREATED_AT='createdAt',
+  USERID = 'userid'
+}
 export enum TestrunsTable {
   ID = 'id',
   NAME = 'name',
@@ -367,7 +375,8 @@ export enum TestrunsTable {
   CREATED_BY ='createdBy',
   USERID = 'userid',
   PROJECTID = 'projectid',
-  DATA = 'data'
+  DATA = 'data',
+  DESCRIPTION='description'
 }
 
 export enum TaskTable {

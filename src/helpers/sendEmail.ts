@@ -31,11 +31,11 @@ export class SendEmail {
         let transportObj;
         if (process.env.ENV === Constants.environments.DEVELOPMENT) {
             transportObj = nodemailer.createTransport({
-                host: process.env.SMTP_HOST,
-                port: process.env.SMTP_PORT,
+                host: process.env.AWS_SMTP_HOST,
+                port: process.env.AWS_SMTP_PORT,
                 auth: {
-                    user: process.env.SMTP_USER_NAME,
-                    pass: process.env.SMTP_PASSWORD,
+                    user: process.env.ACCESS_KEY,
+                    pass: process.env.SECRET_KEY,
                 }
             })
         } else {

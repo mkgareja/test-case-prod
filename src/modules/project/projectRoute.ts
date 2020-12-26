@@ -22,6 +22,7 @@ router.post('/:id',middleware.getUserAuthorized, v.validate(ProjectModel), proje
 router.delete('/:id',middleware.getUserAuthorized, projectController.deleteProject);
 //test run
 router.post('/run/:id',middleware.getUserAuthorized, projectController.addTestRun);
+router.post('/update/run/:id',middleware.getUserAuthorized, projectController.updateTestRun);
 router.get('/run/:id',middleware.getUserAuthorized, projectController.getTestRun);
 router.get('/result/:id',middleware.getUserAuthorized, projectController.getTestRuns);
 
