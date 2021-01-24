@@ -143,7 +143,7 @@ export class ProjectController {
     public getTestRuns = async (req: any, res: Response) => {
         const { id = null } = req.params;
         let result = await this.projectUtils.getTestRuns(id);
-        if(result[0].data){
+        if(result){
             res.status(Constants.SUCCESS_CODE).json({ status: true, data: result });
         }else{
             res.status(Constants.NOT_FOUND_CODE).json({ status: false,error: req.t('NO_DATA') });
