@@ -132,7 +132,8 @@ export class ProjectController {
             pass: resArray.filter(x => x == 'pass').length,
             failed: resArray.filter(x => x == 'failed').length,
             block: resArray.filter(x => x == 'block').length,
-            fail: resArray.filter(x => x == 'fail').length
+            fail: resArray.filter(x => x == 'fail').length,
+            untested: resArray.filter(x => x == 'untested').length
         }
         if(result[0].data){
             res.status(Constants.SUCCESS_CODE).json({ status: true, count:temp_count,data: finalData });
