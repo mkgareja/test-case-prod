@@ -42,7 +42,7 @@ export class ProjectUtils {
         `p.${ProjectTable.DESC}`,
         `p.${ProjectTable.CREATED_AT}`
         ],
-        `p.${ProjectTable.IS_DELETE} = 0 AND p.${ProjectTable.IS_ENABLE} = 1 AND  p.${ProjectTable.USERID} = ? GROUP BY p.${ProjectTable.ID} ORDER BY p.${ProjectTable.CREATED_AT} DESC`,
+        `p.${ProjectTable.IS_DELETE} = 0 AND p.${ProjectTable.IS_ENABLE} = 1 AND  p.${projectUsersTable.USERID} = ? GROUP BY p.${ProjectTable.ID} ORDER BY p.${ProjectTable.CREATED_AT} DESC`,
         [id]);
 
     // const result = await mysql.findAll(Tables.PROJECT,
