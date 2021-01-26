@@ -16,6 +16,7 @@ const projectController = new ProjectController();
 
 router.get('/',middleware.getUserAuthorized, projectController.getProject);
 router.post('/',middleware.getUserAuthorized, v.validate(ProjectModel), projectController.addProject);
+router.post('/invite',middleware.getUserAuthorized, projectController.inviteInProject);
 router.post('/task/:id',middleware.getUserAuthorized, projectController.updateTask);
 router.get('/task/:id',middleware.getUserAuthorized, projectController.getTask);
 router.post('/:id',middleware.getUserAuthorized, v.validate(ProjectModel), projectController.updateProject);

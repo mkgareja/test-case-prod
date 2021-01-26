@@ -95,6 +95,41 @@ export class AuthController {
             res.status(Constants.NOT_FOUND_CODE).json(result);
         }
     };
+    // update user
+    public updateUserInvite = async (req: any, res: Response) => {
+        const user = await this.authUtils.checkUserEmailExistsInvite(req.body.email);
+        if (user) {
+            let salt = bcryptjs.genSaltSync(10);
+            let hash = bcryptjs.hashSync(req.body.password, salt);
+
+            const obj = {
+                firstname: req.body.firstname,
+                password: hash,
+                organization: req.body.organization,
+                domain: req.body.domain,
+                country: req.body.country,
+                users: req.body.users,
+                mobile: req.body.mobile
+            }
+            // creating user profile
+            const result: ResponseBuilder = await this.authUtils.updateUser(user.id, obj);
+            const userDetails = {
+                id: user.id,
+                token: Jwt.getAuthToken({ userId: user.id, deviceId: 123 }),
+                status: true,
+                firstname: req.body.firstname,
+                email: req.body.email,
+                password: req.body.password,
+                msg: req.t('SIGNUP_LOGIN_SUCCESS'),
+            };
+            res.status(result.code).json(userDetails);
+        } else {
+            const userDetails = {
+                msg: 'invalid user'
+            }
+            res.status(Constants.NOT_FOUND_CODE).json(userDetails);
+        }
+    };
 
     public requestOtp = async (req: any, res: Response) => {
         const { countryCode, mobileNumber } = req.query;

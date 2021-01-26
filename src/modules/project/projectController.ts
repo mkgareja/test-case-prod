@@ -2,10 +2,12 @@ import { Constants } from '../../config/constants';
 import { Request, Response } from 'express';
 import { ProjectUtils } from './projectUtils';
 import { v4 as uuidv4 } from 'uuid';
+import { AuthUtils } from '../auth/authUtils';
 import { ResponseBuilder } from '../../helpers/responseBuilder';
 const getPropValues = (o, prop) => (res => (JSON.stringify(o, (key, value) => (key === prop && res.push(value), value)), res))([]);
 
 export class ProjectController {
+    private authUtils: AuthUtils = new AuthUtils();
     private projectUtils: ProjectUtils = new ProjectUtils();
     public getProject = async (req: any, res: Response) => {
         let result = await this.projectUtils.getProjects(req._user.id);
@@ -45,6 +47,52 @@ export class ProjectController {
         await this.projectUtils.addProjectUsers(projectObjnew);
         const msg = req.t('PROJECT_ADDED');
         res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg, data: result.result.newDevice });
+    };
+    public inviteInProject = async (req: any, res: Response) => {
+        const uuid2 = uuidv4();
+        const uuid = uuidv4();
+        const user = await this.authUtils.checkUserEmailExistsInvite(req.body.email);
+        if (user) {
+            if (user.isEnable) {
+                const checkExists = await this.projectUtils.checkUserProjectExists(user.id,req.body.pid);
+                if (checkExists) {
+                    const msg = 'User Already exist in project';
+                    res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
+                } else {
+                    const projectObjnew = {
+                        id: uuid2,
+                        projectid: req.body.pid,
+                        userid: user.id
+                    }
+                    await this.projectUtils.addProjectUsers(projectObjnew);
+                    const msg = 'User added successfully ';
+                    res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
+                }
+            }
+        } else {
+            const obj = {
+                id: uuid,
+                email: req.body.email,
+                isInvite: 1
+            }
+            // creating user profile
+            await this.authUtils.createUser(obj);
+            const projectObjnew = {
+                id: uuid2,
+                projectid: req.body.pid,
+                userid: uuid
+            }
+            await this.projectUtils.addProjectUsers(projectObjnew);
+            await this.authUtils.sendEmailLink(req.body.email,'https://oyetest.com/invite')
+            const msg = 'User added and invited successfully ';
+            res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
+        }
+
+        // creating user profile
+        // const result:any = await this.projectUtils.addProject(projectObj);
+
+        // const msg = req.t('PROJECT_ADDED');
+        // res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg, data: result.result.newDevice });
     };
     public updateProject = async (req: any, res: Response) => {
         const { id = null } = req.params;

@@ -12,7 +12,8 @@ import {
   PasswordModel,
   ResetPasswordModel,
   UserModel,
-  UserUpdateModel
+  UserUpdateModel,
+  UserUpdateModelInvite
 } from './authModel';
 
 // Assign router to the express.Router() instance
@@ -46,7 +47,9 @@ router.post(
   authMiddleware.checkPassword,
   authController.changePassword
 );
+router.post('/invite',v.validate(UserUpdateModelInvite), authController.updateUserInvite);
 router.post('/:id', middleware.getUserAuthorized,v.validate(UserUpdateModel), authController.updateUser);
+
 
 // Export the express.Router() instance to be used by server.ts
 export const AuthRoute: Router = router;

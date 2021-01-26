@@ -63,6 +63,22 @@ export class AuthUtils {
         [email]
       );
     }
+  // check user email is exists or not
+  public async checkUserEmailExistsInvite(email: string) {
+    return await mysql.first(
+      Tables.USER,
+      [
+        UserTable.ID,
+        UserTable.EMAIL,
+        UserTable.IS_ENABLE
+      ],
+      `${UserTable.EMAIL} = ?
+      AND ${UserTable.IS_ENABLE} = 1
+      AND ${UserTable.ISINVITE} = 1
+      AND ${UserTable.IS_DELETE} = 0`,
+      [email]
+    );
+  }
   // send otp
   public async sendOtp(countryCode, mobile) {
     const registered = await mysql.first(
@@ -115,6 +131,16 @@ export class AuthUtils {
       SendEmail.sendRawMail('otp', replaceData, email.toString(),l10n.t('RECOVERY_CODE')); // sending email
       return ResponseBuilder.data({ registered: true });
     }
+  }
+  //send email
+  public async sendEmailLink(email, link) {
+
+    const replaceData = {
+      '{LINK}': link
+    };
+
+    SendEmail.sendRawMail('link', replaceData, email.toString(), 'Join oyetest'); // sending email
+    return ResponseBuilder.data({ registered: true });
   }
   // update User by Id
   public async updateUserDetails(details: Json, id: number): Promise<ResponseBuilder> {

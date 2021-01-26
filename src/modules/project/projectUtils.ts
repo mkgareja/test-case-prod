@@ -66,6 +66,19 @@ export class ProjectUtils {
         return false;
       }
   }
+  public async checkUserProjectExists(uid,pid) {
+    return await mysql.first(
+      Tables.PROJECTUSERS,
+      [
+        projectUsersTable.ID
+      ],
+      `${projectUsersTable.USERID} = ?
+      AND ${projectUsersTable.PROJECTID} = ?
+      AND ${projectUsersTable.IS_ENABLE} = 1
+      AND ${projectUsersTable.IS_DELETE} = 0`,
+      [uid,pid]
+    )
+  }
   public async getTestRun(id) {
     const result = await mysql.findAll(Tables.TESTRUNS,
       [TestrunsTable.DATA,TestrunsTable.DESCRIPTION,TestrunsTable.CREATED_AT,TestrunsTable.NAME], `${TestrunsTable.IS_DELETE} = 0 AND ${TestrunsTable.IS_ENABLE} = 1 and ${TestrunsTable.ID} = ? ORDER BY ${TestrunsTable.CREATED_AT} DESC`, [id]);

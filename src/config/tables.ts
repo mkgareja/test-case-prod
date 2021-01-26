@@ -331,6 +331,7 @@ export enum UserTable {
   ZIPCODE='zipcode',
   CREATED_AT='createdAt',
   CREATED_BY ='createdBy',
+  ISINVITE='isInvite',
   LAST_LOGIN ='lastLogin'
 }
 

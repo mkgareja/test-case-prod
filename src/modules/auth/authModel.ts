@@ -64,6 +64,33 @@ export class UserUpdateModel extends Model {
     this.email = email;
   }
 }
+export class UserUpdateModelInvite extends Model {
+
+  @MaxLength(50)
+  @IsNotEmpty()
+  public firstname: string;
+
+  @IsEmail()
+  @IsNotEmpty()
+  public email: string;
+
+  @IsNotEmpty()
+  @Validate(IsPasswordMatchesRequirementsConstraint, {
+    message: 'ERR_REQUIRED_PASSWORD',
+  })
+  password: string;
+
+
+  // public title: string;
+
+  constructor(body: any) {
+    super();
+    const { email, firstname, password ,deviceId} = body;
+    this.firstname = firstname;
+    this.email = email;
+    this.password= password;
+  }
+}
 
 export class AuthModel extends Model {
 
