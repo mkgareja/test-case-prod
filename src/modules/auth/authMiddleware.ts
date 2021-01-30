@@ -19,8 +19,14 @@ export class AuthMiddleware {
     // check credentials matches or not
     if (user && (await bcryptjs.compare(req.body.password, user.password))) {
       if (user.isEnable) {
-        req.body._authentication = user;
-        next();
+        if (req.body == 'localhost' || req.body == '' || req.body == 'oyetest' || req.body == user.domain) {
+          req.body._authentication = user;
+          next();
+        } else {
+          res
+            .status(Constants.UNAUTHORIZED_CODE)
+            .json({ error: 'Invalid Domain', code: Constants.NOT_FOUND_CODE });
+        }
       } else {
         res
           .status(Constants.PRECONDITION_FAILED)

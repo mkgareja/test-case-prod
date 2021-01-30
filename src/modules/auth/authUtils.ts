@@ -55,7 +55,8 @@ export class AuthUtils {
           UserTable.FIRSTNAME,
           UserTable.EMAIL,
           UserTable.PASSWORD,
-          UserTable.IS_ENABLE
+          UserTable.IS_ENABLE,
+          UserTable.DOMAIN
         ],
         `${UserTable.EMAIL} = ?
         AND ${UserTable.IS_ENABLE} = 1
