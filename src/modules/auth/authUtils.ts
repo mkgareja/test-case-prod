@@ -2,7 +2,7 @@ import * as mysql from 'jm-ez-mysql';
 import * as moment from 'moment';
 
 import { Constants } from '../../config/constants';
-import { Tables, UserTable, DeviceTable,StaticContentTable } from '../../config/tables';
+import { Tables, UserTable, DeviceTable,StaticContentTable, ProjectTable } from '../../config/tables';
 import { ResponseBuilder } from '../../helpers/responseBuilder';
 import { LoginModel } from './authModel';
 import { SMSUtils } from '../../helpers/smsUtils';

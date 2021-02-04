@@ -333,7 +333,8 @@ export enum UserTable {
   CREATED_BY ='createdBy',
   ISINVITE='isInvite',
   LAST_LOGIN ='lastLogin',
-  DOMAIN ='domain'
+  DOMAIN ='domain',
+  ORGANIZATION='organization'
 }
 
 // Devices table's fields

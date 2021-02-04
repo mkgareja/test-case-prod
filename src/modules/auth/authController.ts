@@ -107,9 +107,6 @@ export class AuthController {
             const obj = {
                 firstname: req.body.firstname,
                 password: hash,
-                organization: req.body.organization,
-                domain: req.body.domain,
-                country: req.body.country,
                 users: req.body.users,
                 mobile: req.body.mobile
             }
@@ -121,7 +118,6 @@ export class AuthController {
                 status: true,
                 firstname: req.body.firstname,
                 email: req.body.email,
-                password: req.body.password,
                 msg: req.t('SIGNUP_LOGIN_SUCCESS'),
             };
             res.status(result.code).json(userDetails);

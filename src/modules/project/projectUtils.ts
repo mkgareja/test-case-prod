@@ -97,5 +97,21 @@ export class ProjectUtils {
         return false;
       }
   }
+  public async getUserByProjects(id) {
+    const result =  await mysql.findAll(`${Tables.USER} u
+        LEFT JOIN ${Tables.PROJECT} p on p.${ProjectTable.USERID} = u.${UserTable.ID}`,[
+        `u.${UserTable.ID}`,
+        `u.${UserTable.ORGANIZATION}`,
+        `u.${UserTable.DOMAIN}`,
+        `u.${UserTable.COUNTRY_CODE}`
+        ],
+        `p.${ProjectTable.ID} = ?`,
+        [id]);
+      if (result.length >= 0) {
+        return result;
+      } else {
+        return false;
+      }
+  }
 
 }

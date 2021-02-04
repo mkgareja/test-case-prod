@@ -70,22 +70,28 @@ export class ProjectController {
                 }
             }
         } else {
-            const obj = {
-                id: uuid,
-                email: req.body.email,
-                isInvite: 1
+            const userDetail = await this.projectUtils.getUserByProjects(req.body.pid);
+            if (userDetail) {
+                const obj = {
+                    id: uuid,
+                    email: req.body.email,
+                    isInvite: 1,
+                    organization:userDetail.organization,
+                    domain:userDetail.domain,
+                    country:userDetail.country
+                }
+                // creating user profile
+                await this.authUtils.createUser(obj);
+                const projectObjnew = {
+                    id: uuid2,
+                    projectid: req.body.pid,
+                    userid: uuid
+                }
+                await this.projectUtils.addProjectUsers(projectObjnew);
+                await this.authUtils.sendEmailLink(req.body.email, `https://${userDetail.domain}.oyetest.com/invite`)
+                const msg = 'User added and invited successfully ';
+                res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
             }
-            // creating user profile
-            await this.authUtils.createUser(obj);
-            const projectObjnew = {
-                id: uuid2,
-                projectid: req.body.pid,
-                userid: uuid
-            }
-            await this.projectUtils.addProjectUsers(projectObjnew);
-            await this.authUtils.sendEmailLink(req.body.email,'https://oyetest.com/invite')
-            const msg = 'User added and invited successfully ';
-            res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
         }
 
         // creating user profile
