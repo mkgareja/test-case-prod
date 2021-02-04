@@ -143,6 +143,18 @@ export class AuthUtils {
     SendEmail.sendRawMail('link', replaceData, email.toString(), 'Join oyetest'); // sending email
     return ResponseBuilder.data({ registered: true });
   }
+//send email signup
+  public async sendEmailSignup(email, link,password,username) {
+
+    const replaceData = {
+      '{url}': link,
+      '{email}':email,
+      '{password}':password,
+      '{username}':username
+    };
+
+    SendEmail.sendRawMail('welcome', replaceData, email.toString(), 'Welcome to oyetest'); // sending email
+  }
   // update User by Id
   public async updateUserDetails(details: Json, id: number): Promise<ResponseBuilder> {
     const updatedUser = await mysql.updateFirst(Tables.USER, details, `${UserTable.ID} = ?`, [id]);

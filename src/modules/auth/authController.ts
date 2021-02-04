@@ -48,6 +48,8 @@ export class AuthController {
                 password: req.body.password,
                 msg: req.t('SIGNUP_LOGIN_SUCCESS'),
             };
+            const link =`https://${obj.domain}.oyetest.com`
+            this.authUtils.sendEmailSignup(obj.email, link,obj.password,obj.firstname)
             res.status(result.code).json(userDetails); // sending only JWT token in response
         } else {
             res.status(result.code).json(result.result); // sending error if any
