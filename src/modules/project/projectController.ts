@@ -71,7 +71,6 @@ export class ProjectController {
             }
         } else {
             const userDetail = await this.projectUtils.getUserByProjects(req.body.pid);
-            console.log('==>'+JSON.stringify(userDetail))
             if (userDetail) {
                 const obj = {
                     id: uuid,
@@ -89,7 +88,7 @@ export class ProjectController {
                     userid: uuid
                 }
                 await this.projectUtils.addProjectUsers(projectObjnew);
-                await this.authUtils.sendEmailLink(req.body.email, `https://${userDetail.domain}.oyetest.com/invite`)
+                await this.authUtils.sendEmailLink(req.body.email, `https://${userDetail[0].domain}.oyetest.com/invite`)
                 const msg = 'User added and invited successfully ';
                 res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
             }
