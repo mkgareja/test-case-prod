@@ -71,6 +71,7 @@ export class ProjectController {
             }
         } else {
             const userDetail = await this.projectUtils.getUserByProjects(req.body.pid);
+            console.log('==>'+JSON.stringify(userDetail))
             if (userDetail) {
                 const obj = {
                     id: uuid,
