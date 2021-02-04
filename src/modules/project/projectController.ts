@@ -77,9 +77,9 @@ export class ProjectController {
                     id: uuid,
                     email: req.body.email,
                     isInvite: 1,
-                    organization:userDetail.organization,
-                    domain:userDetail.domain,
-                    country:userDetail.country
+                    organization:userDetail[0].organization,
+                    domain:userDetail[0].domain,
+                    country:userDetail[0].country
                 }
                 // creating user profile
                 await this.authUtils.createUser(obj);
