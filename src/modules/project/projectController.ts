@@ -153,6 +153,7 @@ export class ProjectController {
             userid: req._user.id,
             projectid: id,
             data:tasks[0].data,
+            field:tasks[0].field,
             createdAt: new Date(),
             description:req.body.description
         }
