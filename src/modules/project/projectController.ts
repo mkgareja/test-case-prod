@@ -21,7 +21,7 @@ export class ProjectController {
         const { id = null } = req.params;
         let result = await this.projectUtils.getTask(id);
         if(result[0].data){
-            res.status(Constants.SUCCESS_CODE).json({ status: true, data: JSON.parse(result[0].data) });
+            res.status(Constants.SUCCESS_CODE).json({ status: true,field:JSON.parse(result[0].field), data: JSON.parse(result[0].data) });
         }else{
             res.status(Constants.NOT_FOUND_CODE).json({ status: false,error: req.t('NO_DATA') });
         }
@@ -120,6 +120,19 @@ export class ProjectController {
         const { id = null } = req.params;
         const projectObj = {
             data:JSON.stringify(req.body.data)
+        }
+        const result:ResponseBuilder = await this.projectUtils.updateProject(id,projectObj);
+        if (result.result.status == true) {
+            result.msg = req.t('TASK_ADDED');
+            res.status(Constants.SUCCESS_CODE).json(result);
+        } else {
+            res.status(Constants.NOT_FOUND_CODE).json(result);
+        }
+    }
+    public updateField = async (req: any, res: Response) => {
+        const { id = null } = req.params;
+        const projectObj = {
+            field:JSON.stringify(req.body.data)
         }
         const result:ResponseBuilder = await this.projectUtils.updateProject(id,projectObj);
         if (result.result.status == true) {

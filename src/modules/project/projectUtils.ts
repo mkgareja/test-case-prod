@@ -59,7 +59,7 @@ export class ProjectUtils {
   }
   public async getTask(id) {
     const result = await mysql.findAll(Tables.PROJECT,
-      [ProjectTable.DATA], `${ProjectTable.IS_DELETE} = 0 AND ${ProjectTable.IS_ENABLE} = 1 and ${ProjectTable.ID} = ?`, [id]);
+      [ProjectTable.DATA,ProjectTable.FIELD], `${ProjectTable.IS_DELETE} = 0 AND ${ProjectTable.IS_ENABLE} = 1 and ${ProjectTable.ID} = ?`, [id]);
       if (result.length >= 0) {
         return result;
       } else {

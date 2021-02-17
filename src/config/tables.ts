@@ -359,7 +359,8 @@ export enum ProjectTable {
   USERID = 'userid',
   DATA = 'data',
   TYPE = 'type',
-  DESC = 'description'
+  DESC = 'description',
+  FIELD = 'field'
 }
 export enum projectUsersTable {
   ID = 'id',
