@@ -81,7 +81,7 @@ export class ProjectUtils {
   }
   public async getTestRun(id) {
     const result = await mysql.findAll(Tables.TESTRUNS,
-      [TestrunsTable.DATA,TestrunsTable.DESCRIPTION,TestrunsTable.CREATED_AT,TestrunsTable.NAME], `${TestrunsTable.IS_DELETE} = 0 AND ${TestrunsTable.IS_ENABLE} = 1 and ${TestrunsTable.ID} = ? ORDER BY ${TestrunsTable.CREATED_AT} DESC`, [id]);
+      [TestrunsTable.FIELD,TestrunsTable.DATA,TestrunsTable.DESCRIPTION,TestrunsTable.CREATED_AT,TestrunsTable.NAME], `${TestrunsTable.IS_DELETE} = 0 AND ${TestrunsTable.IS_ENABLE} = 1 and ${TestrunsTable.ID} = ? ORDER BY ${TestrunsTable.CREATED_AT} DESC`, [id]);
       if (result.length >= 0) {
         return result;
       } else {

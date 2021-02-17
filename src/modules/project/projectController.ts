@@ -162,6 +162,7 @@ export class ProjectController {
             userid: req._user.id,
             projectid: id,
             data:JSON.parse(tasks[0].data),
+            field:JSON.parse(tasks[0].field),
             createdAt: new Date(),
             description:req.body.description
         }
@@ -193,7 +194,8 @@ export class ProjectController {
     public getTestRun = async (req: any, res: Response) => {
         const { id = null } = req.params;
         let result = await this.projectUtils.getTestRun(id);
-        let finalData = JSON.parse(result[0].data );
+        let finalData = JSON.parse(result[0].data);
+        let finalField = JSON.parse(result[0].field);
         let resArray = getPropValues(finalData, "status");
         let temp_count = {
             pass: resArray.filter(x => x == 'pass').length,
@@ -203,7 +205,7 @@ export class ProjectController {
             untested: resArray.filter(x => x == 'untested').length
         }
         if(result[0].data){
-            res.status(Constants.SUCCESS_CODE).json({ status: true, count:temp_count,data: finalData });
+            res.status(Constants.SUCCESS_CODE).json({ status: true, count: temp_count, data: finalData, field: finalField });
         }else{
             res.status(Constants.NOT_FOUND_CODE).json({ status: false,error: req.t('NO_DATA') });
         }

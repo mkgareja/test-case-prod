@@ -380,6 +380,7 @@ export enum TestrunsTable {
   USERID = 'userid',
   PROJECTID = 'projectid',
   DATA = 'data',
+  FIELD = 'field',
   DESCRIPTION='description'
 }
 
