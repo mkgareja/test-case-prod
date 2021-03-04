@@ -182,7 +182,8 @@ export class ProjectController {
     public updateTestRun = async (req: any, res: Response) => {
         const { id = null } = req.params;
         const projectObj = {
-            data:JSON.stringify(req.body.data)
+            data:JSON.stringify(req.body.data),
+            updatedBy: req._user.id
         }
         const result:ResponseBuilder = await this.projectUtils.updateTestRun(id,projectObj);
         if (result.result.status == true) {

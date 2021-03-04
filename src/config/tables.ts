@@ -381,7 +381,8 @@ export enum TestrunsTable {
   PROJECTID = 'projectid',
   DATA = 'data',
   FIELD = 'field',
-  DESCRIPTION='description'
+  DESCRIPTION='description',
+  UPDATEDBY='updatedBy'
 }
 
 export enum TaskTable {
