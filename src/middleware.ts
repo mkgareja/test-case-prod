@@ -107,7 +107,8 @@ export class Middleware {
               `${UserTable.ID}`,
               `${UserTable.FIRSTNAME}`,
               `${UserTable.LASTNAME}`,
-              `${UserTable.EMAIL}`
+              `${UserTable.EMAIL}`,
+              `${UserTable.ORGANIZATION}`
             ],
             `${UserTable.ID} = ? AND ${UserTable.IS_ENABLE} = 1 AND ${UserTable.IS_DELETE} = 0`,
             [tokenInfo.userId]

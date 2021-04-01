@@ -64,7 +64,7 @@ export class ProjectController {
                         projectid: req.body.pid,
                         userid: user.id
                     }
-                    await this.projectUtils.addProjectUsers(projectObjnew);
+                    // await this.projectUtils.addProjectUsers(projectObjnew);
                     const msg = 'User added successfully ';
                     res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
                 }
@@ -87,7 +87,7 @@ export class ProjectController {
                     projectid: req.body.pid,
                     userid: uuid
                 }
-                await this.projectUtils.addProjectUsers(projectObjnew);
+                // await this.projectUtils.addProjectUsers(projectObjnew);
                 await this.authUtils.sendEmailLink(req.body.email, `https://${userDetail[0].domain}.oyetest.com/invite`)
                 const msg = 'User added and invited successfully ';
                 res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });

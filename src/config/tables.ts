@@ -15,6 +15,8 @@ export class Tables {
   public static readonly TASKS = 'tasks';
   public static readonly TESTRUNS = 'testruns';
   public static readonly SUBTASKS = 'subtasks';
+  public static readonly ORGANIZATION = 'organization';
+  public static readonly ORGANIZATIONUSER = 'orgUsers';
   public static readonly STORE = 'store';
   public static readonly STOREOWNER = 'storeowner';
   public static readonly CATEGORY = 'categories';
@@ -395,7 +397,22 @@ export enum TaskTable {
   PID = 'projectid',
   DESC = 'description'
 }
-
+export enum OrganizationTable {
+  ID = 'id',
+  NAME = 'name',
+  IS_ENABLE = 'isEnable',
+  IS_DELETE = 'isDelete',
+  CREATED_AT='createdAt',
+  USERID ='userId'
+}
+export enum OrganizationUsersTable {
+  ID = 'id',
+  ORGID = 'orgId',
+  USERID ='userId',
+  IS_ENABLE = 'isEnable',
+  IS_DELETE = 'isDelete',
+  CREATED_AT='createdAt'
+}
 export enum SubTaskTable {
   ID = 'id',
   TITLE = 'title',

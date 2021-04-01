@@ -2,7 +2,7 @@ import * as mysql from 'jm-ez-mysql';
 import * as moment from 'moment';
 
 import { Constants } from '../../config/constants';
-import { Tables, UserTable, DeviceTable,StaticContentTable, ProjectTable } from '../../config/tables';
+import { Tables, UserTable, DeviceTable,StaticContentTable, ProjectTable,OrganizationTable,OrganizationUsersTable,projectUsersTable } from '../../config/tables';
 import { ResponseBuilder } from '../../helpers/responseBuilder';
 import { LoginModel } from './authModel';
 import { SMSUtils } from '../../helpers/smsUtils';
@@ -17,7 +17,49 @@ export class AuthUtils {
     console.log('newUser-->'+JSON.stringify(newUser))
     return ResponseBuilder.data({ id: newUser });
   }
-
+  public async createUserOrg(userDetail: Json): Promise<ResponseBuilder> {
+    const newUser = await mysql.insert(Tables.ORGANIZATION, userDetail);
+    return ResponseBuilder.data({ id: newUser });
+  }
+  public async getProjectsUser(id) {
+    try {
+      const result =  await mysql.findAll(`${Tables.PROJECTUSERS} pu
+      LEFT JOIN ${Tables.USER} u on pu.${projectUsersTable.USERID} = u.${UserTable.ID}`,[
+      `u.${UserTable.ID}`,
+      `u.${UserTable.FIRSTNAME}`,
+      `u.${UserTable.EMAIL}`
+      ],
+      `u.${UserTable.IS_DELETE} = 0 AND u.${UserTable.IS_ENABLE} = 1 AND  pu.${projectUsersTable.PROJECTID} = ? `,
+      [id]);
+    if (result.length >= 0) {
+      return result;
+    } else {
+      return false;
+    }
+    } catch (error) {
+      console.log('error'+error)
+    }
+   
+  }
+  public async getUser(pid,orgid) {
+    try {
+      const result =  await mysql.query(`SELECT ou.*,u.* FROM orgUsers as ou left join users as u on ou.userid=u.id 
+      where not exists(select 1 from projectUsers pu where pu.userId = ou.userid and pu.projectid = ?) and ou.orgId=?;`,
+      [pid,orgid]);
+    if (result.length >= 0) {
+      return result;
+    } else {
+      return false;
+    }
+    } catch (error) {
+      console.log('error'+error)
+    }
+   
+  }
+  public async createUserOrgUsers(userDetail: Json): Promise<ResponseBuilder> {
+    const newUser = await mysql.insert(Tables.ORGANIZATIONUSER, userDetail);
+    return ResponseBuilder.data({ id: newUser });
+  }
   public async updateUser(uid: number , userInfo: Json): Promise<ResponseBuilder> {
     const result = await mysql.updateFirst(Tables.USER, userInfo, `${UserTable.ID} = ?`, [uid]);
     if (result.affectedRows > 0) {
@@ -56,7 +98,8 @@ export class AuthUtils {
           UserTable.EMAIL,
           UserTable.PASSWORD,
           UserTable.IS_ENABLE,
-          UserTable.DOMAIN
+          UserTable.DOMAIN,
+          UserTable.ORGANIZATION
         ],
         `${UserTable.EMAIL} = ?
         AND ${UserTable.IS_ENABLE} = 1

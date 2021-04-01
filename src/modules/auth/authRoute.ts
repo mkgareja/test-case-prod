@@ -25,6 +25,8 @@ const authMiddleware = new AuthMiddleware();
 
 router.post('/logout',middleware.getUserAuthorized, authController.unassignDevice);
 router.get('/get', authController.get);
+router.get('/user/project/:id', authController.getOrgUsers);
+router.get('/user/:pid/:oid', authController.getUsers);
 router.post('/forgot-password', v.validate(ForgotPasswordModel),authController.forgotPassword);
 router.post('/sign-up', v.validate(UserModel), authController.signup);
 router.post(

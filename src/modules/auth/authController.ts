@@ -21,18 +21,32 @@ export class AuthController {
         // creating user in SOL CDK
         const uuid = uuidv4();
         const customerData = { customerId: uuid }
+        const orgUid = uuidv4();
+        const objOrg = {
+            id:orgUid,
+            name: req.body.organization
+        }
+        const orgUserId = uuidv4();
+        const objOrguser = {
+            id:orgUserId,
+            orgId: orgUid,
+            userId:uuid
+        }
+        // creating user profile
+        await this.authUtils.createUserOrg(objOrg);
+        await this.authUtils.createUserOrgUsers(objOrguser);
+        // let insertId = resultNew.insertId;
         const obj = {
             id:uuid,
             firstname: req.body.firstname,
             email: req.body.email,
             password: hash,
-            organization:req.body.organization,
+            organization:orgUid,
             domain:req.body.domain,
             country:req.body.country,
             users:req.body.users,
             mobile:req.body.mobile
         }
-        // creating user profile
         const result: ResponseBuilder = await this.authUtils.createUser(obj);
 
         if (result) {
@@ -55,6 +69,22 @@ export class AuthController {
             res.status(result.code).json(result.result); // sending error if any
         }
     };
+    public getOrgUsers = async (req: any, res: Response) => {
+        let result = await this.authUtils.getProjectsUser(req.params.id);
+        if(result){
+            res.status(Constants.SUCCESS_CODE).json({ status: true, data: result });
+        }else{
+            res.status(Constants.NOT_FOUND_CODE).json({ status: false,error: req.t('NO_DATA') });
+        }
+    }
+    public getUsers = async (req: any, res: Response) => {
+        let result = await this.authUtils.getUser(req.params.pid,req.params.oid);
+        if(result){
+            res.status(Constants.SUCCESS_CODE).json({ status: true, data: result });
+        }else{
+            res.status(Constants.NOT_FOUND_CODE).json({ status: false,error: req.t('NO_DATA') });
+        }
+    }
     public inviteUser = async (req: any, res: Response) => {
         // delete req.body.deviceId;
         let salt = bcryptjs.genSaltSync(10);
@@ -150,7 +180,8 @@ export class AuthController {
             }),
             id: req.body._authentication.id,
             email: req.body._authentication.email,
-            firstname: req.body._authentication.firstname
+            firstname: req.body._authentication.firstname,
+            organization: req.body._authentication.organization
         };
         res.status(Constants.SUCCESS_CODE).json(userDetails);
     };
