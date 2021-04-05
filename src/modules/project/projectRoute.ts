@@ -14,9 +14,12 @@ const router: Router = Router();
 const v: Validator = new Validator();
 const projectController = new ProjectController();
 
-router.get('/',middleware.getUserAuthorized, projectController.getProject);
+router.get('/',middleware.getUserAuthorized, projectController.getProject)
 router.post('/',middleware.getUserAuthorized, v.validate(ProjectModel), projectController.addProject);
 router.post('/invite',middleware.getUserAuthorized, projectController.inviteInProject);
+router.post('/email',middleware.getUserAuthorized, projectController.sendTestRunEmail);
+router.post('/add/user',middleware.getUserAuthorized, projectController.addUserToProject);
+router.post('/remove/user',middleware.getUserAuthorized, projectController.removeUserToProject);
 router.post('/task/:id',middleware.getUserAuthorized, projectController.updateTask);
 router.post('/field/:id',middleware.getUserAuthorized, projectController.updateField);
 router.get('/task/:id',middleware.getUserAuthorized, projectController.getTask);
@@ -27,6 +30,7 @@ router.post('/run/:id',middleware.getUserAuthorized, projectController.addTestRu
 router.post('/update/run/:id',middleware.getUserAuthorized, projectController.updateTestRun);
 router.get('/run/:id',middleware.getUserAuthorized, projectController.getTestRun);
 router.get('/result/:id',middleware.getUserAuthorized, projectController.getTestRuns);
+router.get('/analytics/result/:id',middleware.getUserAuthorized, projectController.getTestRunsAnalytics);
 
 
 // Export the express.Router() instance to be used by server.ts

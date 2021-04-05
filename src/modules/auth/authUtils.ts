@@ -21,6 +21,19 @@ export class AuthUtils {
     const newUser = await mysql.insert(Tables.ORGANIZATION, userDetail);
     return ResponseBuilder.data({ id: newUser });
   }
+  public async updateOrg(orgId: any, orgInfo: Json): Promise<ResponseBuilder> {
+    try {
+      const result = await mysql.updateFirst(Tables.ORGANIZATION, orgInfo, `${OrganizationTable.ID} = ?`, [orgId]);
+      if (result.affectedRows > 0) {
+        return ResponseBuilder.data({ status: true, data: result });
+      } else {
+        return ResponseBuilder.data({ status: false });
+      }
+    } catch (error) {
+      console.log(error)
+    }
+
+  }
   public async getProjectsUser(id) {
     try {
       const result =  await mysql.findAll(`${Tables.PROJECTUSERS} pu
@@ -223,6 +236,15 @@ export class AuthUtils {
   // Get User devices
   public async checkDeviceRegistered(id: number) {
     return await mysql.first(Tables.DEVICE, [DeviceTable.ID], `${DeviceTable.ID} = ?`, [id]);
+  }
+
+  public async getOrgEmail(id: any) {
+    try {
+      return await mysql.first(Tables.ORGANIZATION, [OrganizationTable.EMAIL], `${OrganizationTable.ID} = ?`, [id]);  
+    } catch (error) {
+      console.log(error)
+    }
+    
   }
 
 }

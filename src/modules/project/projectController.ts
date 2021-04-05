@@ -48,15 +48,31 @@ export class ProjectController {
         const msg = req.t('PROJECT_ADDED');
         res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg, data: result.result.newDevice });
     };
+    public addUserToProject = async (req: any, res: Response) => {
+        const uuid2 = uuidv4();
+        const projectObjnew = {
+            id: uuid2,
+            projectid: req.body.pid,
+            userid: req.body.uid
+        }
+        await this.projectUtils.addProjectUsers(projectObjnew);
+        const msg = 'User added successfully ';
+        res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
+    }
+    public removeUserToProject = async (req: any, res: Response) => {
+        await this.projectUtils.deleteUserProject(req.body.uid,req.body.pid);
+        const msg = 'User removed successfully ';
+        res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
+    }
     public inviteInProject = async (req: any, res: Response) => {
         const uuid2 = uuidv4();
         const uuid = uuidv4();
         const user = await this.authUtils.checkUserEmailExistsInvite(req.body.email);
         if (user) {
             if (user.isEnable) {
-                const checkExists = await this.projectUtils.checkUserProjectExists(user.id,req.body.pid);
+                const checkExists = await this.projectUtils.checkUserOrgExists(user.id,req.body.orgId);
                 if (checkExists) {
-                    const msg = 'User Already exist in project';
+                    const msg = 'User Already exist in organization';
                     res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
                 } else {
                     const projectObjnew = {
@@ -65,12 +81,20 @@ export class ProjectController {
                         userid: user.id
                     }
                     // await this.projectUtils.addProjectUsers(projectObjnew);
+                    const orgUserId = uuidv4();
+                    const objOrguser = {
+                        id:orgUserId,
+                        orgId: req.body.orgId,
+                        userId:user.id
+                    }
+                    // creating user profile
+                    await this.authUtils.createUserOrgUsers(objOrguser);
                     const msg = 'User added successfully ';
                     res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
                 }
             }
         } else {
-            const userDetail = await this.projectUtils.getUserByProjects(req.body.pid);
+            const userDetail = await this.projectUtils.getUserByOrg(req.body.orgId);
             if (userDetail) {
                 const obj = {
                     id: uuid,
@@ -82,11 +106,19 @@ export class ProjectController {
                 }
                 // creating user profile
                 await this.authUtils.createUser(obj);
-                const projectObjnew = {
-                    id: uuid2,
-                    projectid: req.body.pid,
-                    userid: uuid
+                const orgUserId = uuidv4();
+                const objOrguser = {
+                    id:orgUserId,
+                    orgId: req.body.orgId,
+                    userId:uuid
                 }
+                // creating user profile
+                await this.authUtils.createUserOrgUsers(objOrguser);
+                // const projectObjnew = {
+                //     id: uuid2,
+                //     projectid: req.body.pid,
+                //     userid: uuid
+                // }
                 // await this.projectUtils.addProjectUsers(projectObjnew);
                 await this.authUtils.sendEmailLink(req.body.email, `https://${userDetail[0].domain}.oyetest.com/invite`)
                 const msg = 'User added and invited successfully ';
@@ -99,6 +131,14 @@ export class ProjectController {
 
         // const msg = req.t('PROJECT_ADDED');
         // res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg, data: result.result.newDevice });
+    };
+    public addEmailOrg = async (req: any, res: Response) => {
+        const objOrg = {
+            email: req.body.email
+        }
+        const result:ResponseBuilder = await this.authUtils.updateOrg(req.body.orgId,objOrg);
+        const msg = 'Email added successfully';
+        res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
     };
     public updateProject = async (req: any, res: Response) => {
         const { id = null } = req.params;
@@ -183,7 +223,8 @@ export class ProjectController {
         const { id = null } = req.params;
         const projectObj = {
             data:JSON.stringify(req.body.data),
-            updatedBy: req._user.id
+            updatedBy: req._user.id,
+            updatedAt: new Date()
         }
         const result:ResponseBuilder = await this.projectUtils.updateTestRun(id,projectObj);
         if (result.result.status == true) {
@@ -212,9 +253,100 @@ export class ProjectController {
             res.status(Constants.NOT_FOUND_CODE).json({ status: false,error: req.t('NO_DATA') });
         }
     };
+    public sendTestRunEmail = async (req: any, res: Response) => {
+        const { id = null } = req.body;
+        const { orgId = null } = req.body;
+        let result = await this.projectUtils.getTestRun(id);
+        const userEmail = await this.authUtils.getOrgEmail(orgId);
+        
+        let finalData = JSON.parse(result[0].data);
+        let resArray = getPropValues(finalData, "status");
+        let temp_count = {
+            pass: resArray.filter(x => x == 'pass').length,
+            failed: resArray.filter(x => x == 'failed').length,
+            block: resArray.filter(x => x == 'block').length,
+            fail: resArray.filter(x => x == 'fail').length,
+            untested: resArray.filter(x => x == 'untested').length
+        }
+        let  emailCount;
+        let testCases;
+        try {
+        emailCount = `<table> 
+        <tr> 
+        <th>Type</th>
+        <th>Count</th>
+        </tr>
+        <tr> 
+        <td>Pass</td>
+        <td>${temp_count.pass}</td>
+        </tr>
+        <tr> 
+        <td>Failed</td>
+        <td>${temp_count.failed}</td>
+        </tr>
+        <tr> 
+        <td>Block</td>
+        <td>${temp_count.block}</td>
+        </tr>
+        <tr> 
+        <td>Fail</td>
+        <td>${temp_count.fail}</td>
+        </tr>
+        <tr> 
+        <td>Untested</td>
+        <td>${temp_count.untested}</td>
+        </tr>
+        </table>`;
+
+         testCases= `<tr> 
+        <th>id</th>
+        <th>Name</th>
+        <th>Status</th>
+        </tr>`
+        await finalData.forEach(async(element) =>{
+            testCases += `<tr>
+            <td></td> 
+            <td>${element.model}</td>
+            <td></td>
+            </tr>`
+            await element.lists.forEach(item => {
+                testCases +=`<tr>
+                <td>${item.id}</td> 
+                <td>${item.name}</td>
+                <td>${item.status}</td>
+                </tr>`
+            })
+        });
+        
+        testCases += `</table>`
+        } catch (error) {
+            console.log(error)
+        }
+
+        const objFinal ={
+            result:emailCount,
+            testCases:testCases
+        }
+        this.projectUtils.sendEmailResult(userEmail.email,objFinal)
+        // if(result[0].data){
+            res.status(Constants.SUCCESS_CODE).json({ status: true});
+        // }else{
+        //     res.status(Constants.NOT_FOUND_CODE).json({ status: false,error: req.t('NO_DATA') });
+        // }
+
+    };
     public getTestRuns = async (req: any, res: Response) => {
         const { id = null } = req.params;
         let result = await this.projectUtils.getTestRuns(id);
+        if(result){
+            res.status(Constants.SUCCESS_CODE).json({ status: true, data: result });
+        }else{
+            res.status(Constants.NOT_FOUND_CODE).json({ status: false,error: req.t('NO_DATA') });
+        }
+    };
+    public getTestRunsAnalytics = async (req: any, res: Response) => {
+        const { id = null } = req.params;
+        let result = await this.projectUtils.getTestRunsAnalytics(id);
         if(result){
             res.status(Constants.SUCCESS_CODE).json({ status: true, data: result });
         }else{

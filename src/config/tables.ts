@@ -384,7 +384,8 @@ export enum TestrunsTable {
   DATA = 'data',
   FIELD = 'field',
   DESCRIPTION='description',
-  UPDATEDBY='updatedBy'
+  UPDATEDBY='updatedBy',
+  UPDATEDAT='updatedAt'
 }
 
 export enum TaskTable {
@@ -403,7 +404,8 @@ export enum OrganizationTable {
   IS_ENABLE = 'isEnable',
   IS_DELETE = 'isDelete',
   CREATED_AT='createdAt',
-  USERID ='userId'
+  USERID ='userId',
+  EMAIL ='email'
 }
 export enum OrganizationUsersTable {
   ID = 'id',
