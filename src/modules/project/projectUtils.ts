@@ -124,14 +124,14 @@ export class ProjectUtils {
         return false;
       }
   }
-  public async getTestRunsAnalytics(id) {
+  public async getTestRunsAnalytics(id:any,limit:any) {
     const result = await mysql.findAll(
       `${Tables.TESTRUNS} tr
       LEFT JOIN ${Tables.USER} as u on tr.${TestrunsTable.UPDATEDBY}=u.${UserTable.ID}`,
       [
-        `tr.${TestrunsTable.ID},tr.${TestrunsTable.DATA},tr.${TestrunsTable.DESCRIPTION},tr.${TestrunsTable.CREATED_AT},tr.${TestrunsTable.NAME},u.${UserTable.FIRSTNAME}`
+        `tr.${TestrunsTable.ID},tr.${TestrunsTable.DATA},tr.${TestrunsTable.DESCRIPTION},tr.${TestrunsTable.UPDATEDAT},tr.${TestrunsTable.NAME},u.${UserTable.FIRSTNAME}`
       ], 
-        `tr.${TestrunsTable.IS_DELETE} = 0 AND tr.${TestrunsTable.IS_ENABLE} = 1 and tr.${TestrunsTable.PROJECTID} = ? ORDER BY tr.${TestrunsTable.UPDATEDAT} DESC`, [id]);
+        `tr.${TestrunsTable.IS_DELETE} = 0 AND tr.${TestrunsTable.IS_ENABLE} = 1 and tr.${TestrunsTable.PROJECTID} = ? ORDER BY tr.${TestrunsTable.UPDATEDAT} DESC LIMIT ${limit}`, [id]);
       if (result.length >= 0) {
         return result;
       } else {

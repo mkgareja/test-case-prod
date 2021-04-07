@@ -30,7 +30,7 @@ router.post('/run/:id',middleware.getUserAuthorized, projectController.addTestRu
 router.post('/update/run/:id',middleware.getUserAuthorized, projectController.updateTestRun);
 router.get('/run/:id',middleware.getUserAuthorized, projectController.getTestRun);
 router.get('/result/:id',middleware.getUserAuthorized, projectController.getTestRuns);
-router.get('/analytics/result/:id',middleware.getUserAuthorized, projectController.getTestRunsAnalytics);
+router.get('/analytics/result/:id/:limit',middleware.getUserAuthorized, projectController.getTestRunsAnalytics);
 
 
 // Export the express.Router() instance to be used by server.ts

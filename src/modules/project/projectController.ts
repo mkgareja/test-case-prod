@@ -346,7 +346,8 @@ export class ProjectController {
     };
     public getTestRunsAnalytics = async (req: any, res: Response) => {
         const { id = null } = req.params;
-        let result = await this.projectUtils.getTestRunsAnalytics(id);
+        const { limit = null } = req.params;
+        let result = await this.projectUtils.getTestRunsAnalytics(id,limit);
         if(result){
             res.status(Constants.SUCCESS_CODE).json({ status: true, data: result });
         }else{
