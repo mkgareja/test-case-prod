@@ -2,7 +2,7 @@ import * as mysql from 'jm-ez-mysql';
 import * as moment from 'moment';
 
 import { Constants } from '../../config/constants';
-import { Tables, UserTable, DeviceTable,StaticContentTable, ProjectTable,OrganizationTable,OrganizationUsersTable,projectUsersTable } from '../../config/tables';
+import { Tables, UserTable, DeviceTable,StaticContentTable, ProjectTable,OrganizationTable,OrganizationUsersTable,projectUsersTable, OrgEmailsTable } from '../../config/tables';
 import { ResponseBuilder } from '../../helpers/responseBuilder';
 import { LoginModel } from './authModel';
 import { SMSUtils } from '../../helpers/smsUtils';
@@ -33,6 +33,15 @@ export class AuthUtils {
       console.log(error)
     }
 
+  }
+  public async updateOrgEmail(orgInfo: Json): Promise<ResponseBuilder> {
+    try {
+      const newUser = await mysql.insert(Tables.ORGEMAIL, orgInfo);
+      return ResponseBuilder.data({ id: newUser });
+    } catch (error) {
+      console.log(error)
+    }
+    
   }
   public async getProjectsUser(id) {
     try {
@@ -240,7 +249,7 @@ export class AuthUtils {
 
   public async getOrgEmail(id: any) {
     try {
-      return await mysql.first(Tables.ORGANIZATION, [OrganizationTable.EMAIL], `${OrganizationTable.ID} = ?`, [id]);  
+      return await mysql.findAll(Tables.ORGEMAIL, [OrgEmailsTable.EMAIL], `${OrgEmailsTable.ORGID} = ? and ${OrgEmailsTable.IS_ENABLE} =1`, [id]);  
     } catch (error) {
       console.log(error)
     }

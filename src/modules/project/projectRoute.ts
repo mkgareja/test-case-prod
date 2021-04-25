@@ -18,6 +18,9 @@ router.get('/',middleware.getUserAuthorized, projectController.getProject)
 router.post('/',middleware.getUserAuthorized, v.validate(ProjectModel), projectController.addProject);
 router.post('/invite',middleware.getUserAuthorized, projectController.inviteInProject);
 router.post('/email',middleware.getUserAuthorized, projectController.sendTestRunEmail);
+router.get('/org/email/:id',middleware.getUserAuthorized, projectController.getOrgEmail);
+router.post('/add/org/email',middleware.getUserAuthorized, projectController.addEmailOrg);
+router.post('/remove/org/email',middleware.getUserAuthorized, projectController.removeEmailOrg);
 router.post('/add/user',middleware.getUserAuthorized, projectController.addUserToProject);
 router.post('/remove/user',middleware.getUserAuthorized, projectController.removeUserToProject);
 router.post('/task/:id',middleware.getUserAuthorized, projectController.updateTask);

@@ -16,6 +16,7 @@ export class Tables {
   public static readonly TESTRUNS = 'testruns';
   public static readonly SUBTASKS = 'subtasks';
   public static readonly ORGANIZATION = 'organization';
+  public static readonly ORGEMAIL = 'orgEmail';
   public static readonly ORGANIZATIONUSER = 'orgUsers';
   public static readonly STORE = 'store';
   public static readonly STOREOWNER = 'storeowner';
@@ -412,6 +413,14 @@ export enum OrganizationUsersTable {
   ORGID = 'orgId',
   USERID ='userId',
   IS_ENABLE = 'isEnable',
+  IS_DELETE = 'isDelete',
+  CREATED_AT='createdAt'
+}
+export enum OrgEmailsTable {
+  ID = 'id',
+  ORGID = 'orgId',
+  IS_ENABLE = 'isEnable',
+  EMAIL = 'email',
   IS_DELETE = 'isDelete',
   CREATED_AT='createdAt'
 }

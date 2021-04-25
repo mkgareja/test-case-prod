@@ -1,7 +1,7 @@
 import * as mysql from 'jm-ez-mysql';
 import { ResponseBuilder } from '../../helpers/responseBuilder';
 import { SendEmail } from '../../helpers/sendEmail';
-import { Tables, UserTable, DeviceTable,StaticContentTable,ProjectTable,TestrunsTable, projectUsersTable,OrganizationUsersTable, OrganizationTable } from '../../config/tables';
+import { Tables, UserTable,OrgEmailsTable,StaticContentTable,ProjectTable,TestrunsTable, projectUsersTable,OrganizationUsersTable, OrganizationTable } from '../../config/tables';
 
 export class ProjectUtils {
    // Get User devices
@@ -20,6 +20,14 @@ export class ProjectUtils {
   }
   public async updateUserProject(uid,Info,pid): Promise<ResponseBuilder> {
     const  result = await mysql.updateFirst(Tables.PROJECTUSERS, Info, `${projectUsersTable.USERID} = ? and ${projectUsersTable.PROJECTID} = ?`, [uid,pid]);
+    if (result.affectedRows > 0) {
+      return ResponseBuilder.data({ status: true, data: result });
+    } else {
+      return ResponseBuilder.data({ status: false });
+    }
+  }
+  public async removeEmailOrg(Info,id): Promise<ResponseBuilder> {
+    const  result = await mysql.updateFirst(Tables.ORGEMAIL, Info, `${OrgEmailsTable.ID} = ?`, [id]);
     if (result.affectedRows > 0) {
       return ResponseBuilder.data({ status: true, data: result });
     } else {
@@ -88,6 +96,15 @@ export class ProjectUtils {
         return false;
       }
   }
+  public async getAllEmail(id) {
+    const result = await mysql.findAll(Tables.ORGEMAIL,
+      [OrgEmailsTable.ID,OrgEmailsTable.EMAIL], `${OrgEmailsTable.IS_DELETE} = 0 AND ${OrgEmailsTable.IS_ENABLE} = 1 and ${OrgEmailsTable.ORGID} = ?`, [id]);
+      if (result.length >= 0) {
+        return result;
+      } else {
+        return false;
+      }
+  }
   public async checkUserOrgExists(uid,orgId) {
     return await mysql.first(
       Tables.ORGANIZATIONUSER,
@@ -146,7 +163,7 @@ export class ProjectUtils {
       '{testCases}': data.testCases||''
     };
 
-    SendEmail.sendRawMail('test-result', replaceData, email.toString(), 'Oyetest test-run'); // sending email
+    SendEmail.sendRawMail('test-result', replaceData, email, 'Oyetest test-run'); // sending email
     return ResponseBuilder.data({ registered: true });
   }
   public async getUserByOrg(id) {

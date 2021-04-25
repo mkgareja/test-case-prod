@@ -134,12 +134,22 @@ export class ProjectController {
     };
     public addEmailOrg = async (req: any, res: Response) => {
         const objOrg = {
-            email: req.body.email
+            id: uuidv4(),
+            email: req.body.email,
+            orgId: req.body.orgId
         }
-        const result:ResponseBuilder = await this.authUtils.updateOrg(req.body.orgId,objOrg);
+        const result:ResponseBuilder = await this.authUtils.updateOrgEmail(objOrg);
         const msg = 'Email added successfully';
         res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
     };
+    public removeEmailOrg = async (req: any, res: Response) => {
+        const objOrg = {
+            isEnable:0
+        }
+        await this.projectUtils.removeEmailOrg(objOrg,req.body.id);
+        const msg = 'Email removed successfully ';
+        res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
+    }
     public updateProject = async (req: any, res: Response) => {
         const { id = null } = req.params;
         const projectObj = {
@@ -257,8 +267,12 @@ export class ProjectController {
         const { id = null } = req.body;
         const { orgId = null } = req.body;
         let result = await this.projectUtils.getTestRun(id);
+        let emails=[];
         const userEmail = await this.authUtils.getOrgEmail(orgId);
-        
+        userEmail.forEach(element => {
+            emails.push(element.email)
+        });
+        console.log(JSON.stringify(emails))
         let finalData = JSON.parse(result[0].data);
         let resArray = getPropValues(finalData, "status");
         let temp_count = {
@@ -327,7 +341,7 @@ export class ProjectController {
             result:emailCount,
             testCases:testCases
         }
-        this.projectUtils.sendEmailResult(userEmail.email,objFinal)
+        this.projectUtils.sendEmailResult(emails,objFinal)
         // if(result[0].data){
             res.status(Constants.SUCCESS_CODE).json({ status: true});
         // }else{
@@ -338,6 +352,15 @@ export class ProjectController {
     public getTestRuns = async (req: any, res: Response) => {
         const { id = null } = req.params;
         let result = await this.projectUtils.getTestRuns(id);
+        if(result){
+            res.status(Constants.SUCCESS_CODE).json({ status: true, data: result });
+        }else{
+            res.status(Constants.NOT_FOUND_CODE).json({ status: false,error: req.t('NO_DATA') });
+        }
+    };
+    public getOrgEmail = async (req: any, res: Response) => {
+        const { id = null } = req.params;
+        let result = await this.projectUtils.getAllEmail(id);
         if(result){
             res.status(Constants.SUCCESS_CODE).json({ status: true, data: result });
         }else{
