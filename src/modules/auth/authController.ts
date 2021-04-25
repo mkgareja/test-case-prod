@@ -37,15 +37,15 @@ export class AuthController {
         await this.authUtils.createUserOrgUsers(objOrguser);
         // let insertId = resultNew.insertId;
         const obj = {
-            id:uuid,
+            id: uuid,
             firstname: req.body.firstname,
             email: req.body.email,
             password: hash,
-            organization:orgUid,
-            domain:req.body.domain,
-            country:req.body.country,
-            users:req.body.users,
-            mobile:req.body.mobile
+            organization: orgUid,
+            domain: req.body.domain,
+            country: req.body.country || '',
+            users: req.body.users,
+            mobile: req.body.mobile || ''
         }
         const result: ResponseBuilder = await this.authUtils.createUser(obj);
 
