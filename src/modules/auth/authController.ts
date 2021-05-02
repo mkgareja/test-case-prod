@@ -181,7 +181,8 @@ export class AuthController {
             id: req.body._authentication.id,
             email: req.body._authentication.email,
             firstname: req.body._authentication.firstname,
-            organization: req.body._authentication.organization
+            organization: req.body._authentication.organization,
+            domain: req.body._authentication.domain
         };
         res.status(Constants.SUCCESS_CODE).json(userDetails);
     };

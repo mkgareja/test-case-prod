@@ -283,7 +283,7 @@ export class ProjectController {
             untested: resArray.filter(x => x == 'untested').length
         }
         let  emailCount;
-        let testCases;
+        let testCases='';
         try {
         emailCount = `<table> 
         <tr> 
@@ -312,27 +312,6 @@ export class ProjectController {
         </tr>
         </table>`;
 
-         testCases= `<tr> 
-        <th>id</th>
-        <th>Name</th>
-        <th>Status</th>
-        </tr>`
-        await finalData.forEach(async(element) =>{
-            testCases += `<tr>
-            <td></td> 
-            <td>${element.model}</td>
-            <td></td>
-            </tr>`
-            await element.lists.forEach(item => {
-                testCases +=`<tr>
-                <td>${item.id}</td> 
-                <td>${item.name}</td>
-                <td>${item.status}</td>
-                </tr>`
-            })
-        });
-        
-        testCases += `</table>`
         } catch (error) {
             console.log(error)
         }
