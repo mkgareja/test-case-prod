@@ -196,38 +196,41 @@ export class ProjectController {
         const uuid = uuidv4();
         const { id = null } = req.params;
         const tasks = await this.projectUtils.getTask(id);
-
-        const tempObj = {
-            id: uuid,
-            name: req.body.name,
-            userid: req._user.id,
-            projectid: id,
-            data:tasks[0].data,
-            field:tasks[0].field,
-            createdAt: new Date(),
-            description:req.body.description
+        if (!tasks[0].data) {
+            res.status(Constants.SUCCESS_CODE).json({ code: 400, msg: 'No test cases found' });
+        } else {
+            const tempObj = {
+                id: uuid,
+                name: req.body.name,
+                userid: req._user.id,
+                projectid: id,
+                data: tasks[0].data,
+                field: tasks[0].field,
+                createdAt: new Date(),
+                description: req.body.description
+            }
+            const resTempObj = {
+                id: uuid,
+                name: req.body.name,
+                userid: req._user.id,
+                projectid: id,
+                data: JSON.parse(tasks[0].data),
+                field: JSON.parse(tasks[0].field),
+                createdAt: new Date(),
+                description: req.body.description
+            }
+            let resArray = getPropValues(resTempObj.data, "status");
+            let temp_count = {
+                pass: resArray.filter(x => x == 'pass').length,
+                failed: resArray.filter(x => x == 'failed').length,
+                block: resArray.filter(x => x == 'block').length,
+                fail: resArray.filter(x => x == 'fail').length
+            }
+            // creating user profile
+            const result: any = await this.projectUtils.addTestRun(tempObj);
+            const msg = req.t('TEST_RUN_ADDED');
+            res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg, count: temp_count, data: resTempObj });
         }
-        const resTempObj = {
-            id: uuid,
-            name: req.body.name,
-            userid: req._user.id,
-            projectid: id,
-            data:JSON.parse(tasks[0].data),
-            field:JSON.parse(tasks[0].field),
-            createdAt: new Date(),
-            description:req.body.description
-        }
-        let resArray = getPropValues(resTempObj.data, "status");
-        let temp_count = {
-            pass: resArray.filter(x => x == 'pass').length,
-            failed: resArray.filter(x => x == 'failed').length,
-            block: resArray.filter(x => x == 'block').length,
-            fail: resArray.filter(x => x == 'fail').length
-        }
-        // creating user profile
-        const result:any = await this.projectUtils.addTestRun(tempObj);
-        const msg = req.t('TEST_RUN_ADDED');
-        res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg, count:temp_count,data: resTempObj });
     }
     public updateTestRun = async (req: any, res: Response) => {
         const { id = null } = req.params;
