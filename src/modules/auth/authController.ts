@@ -138,7 +138,7 @@ export class AuthController {
                 firstname: req.body.firstname,
                 password: hash,
                 users: req.body.users,
-                mobile: req.body.mobile
+                mobile: req.body.mobile||''
             }
             // creating user profile
             const result: ResponseBuilder = await this.authUtils.updateUser(user.id, obj);
