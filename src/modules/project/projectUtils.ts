@@ -159,7 +159,9 @@ export class ProjectUtils {
   public async sendEmailResult(email, data) {
 
     const replaceData = {
-      '{result}': data.result,
+      '{pass}': data.result.pass,
+      '{failed}': data.result.failed,
+      '{untested}': data.result.untested,
       '{testCases}': data.testCases||'',
       '{pname}':data.pname,
       '{testName}':data.testName
