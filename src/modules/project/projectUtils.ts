@@ -160,7 +160,9 @@ export class ProjectUtils {
 
     const replaceData = {
       '{result}': data.result,
-      '{testCases}': data.testCases||''
+      '{testCases}': data.testCases||'',
+      '{pname}':data.pname,
+      '{testName}':data.testName
     };
 
     SendEmail.sendRawMail('test-result', replaceData, email, 'Oyetest test-run'); // sending email

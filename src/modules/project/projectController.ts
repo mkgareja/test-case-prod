@@ -269,13 +269,15 @@ export class ProjectController {
     public sendTestRunEmail = async (req: any, res: Response) => {
         const { id = null } = req.body;
         const { orgId = null } = req.body;
+        const { pname = null } = req.body;
+
         let result = await this.projectUtils.getTestRun(id);
         let emails=[];
         const userEmail = await this.authUtils.getOrgEmail(orgId);
         userEmail.forEach(element => {
             emails.push(element.email)
         });
-        console.log(JSON.stringify(emails))
+        // console.log(JSON.stringify(emails))
         let finalData = JSON.parse(result[0].data);
         let resArray = getPropValues(finalData, "status");
         let temp_count = {
@@ -288,32 +290,7 @@ export class ProjectController {
         let  emailCount;
         let testCases='';
         try {
-        emailCount = `<table> 
-        <tr> 
-        <th>Type</th>
-        <th>Count</th>
-        </tr>
-        <tr> 
-        <td>Pass</td>
-        <td>${temp_count.pass}</td>
-        </tr>
-        <tr> 
-        <td>Failed</td>
-        <td>${temp_count.failed}</td>
-        </tr>
-        <tr> 
-        <td>Block</td>
-        <td>${temp_count.block}</td>
-        </tr>
-        <tr> 
-        <td>Fail</td>
-        <td>${temp_count.fail}</td>
-        </tr>
-        <tr> 
-        <td>Untested</td>
-        <td>${temp_count.untested}</td>
-        </tr>
-        </table>`;
+        emailCount = temp_count
 
         } catch (error) {
             console.log(error)
@@ -321,7 +298,9 @@ export class ProjectController {
 
         const objFinal ={
             result:emailCount,
-            testCases:testCases
+            testCases:testCases,
+            pname:pname,
+            testName:result[0].name
         }
         this.projectUtils.sendEmailResult(emails,objFinal)
         // if(result[0].data){
