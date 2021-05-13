@@ -205,7 +205,7 @@ export class AuthUtils {
       '{LINK}': link
     };
 
-    SendEmail.sendRawMail('link', replaceData, email.toString(), 'Join oyetest'); // sending email
+    SendEmail.sendRawMail('link', replaceData, email.toString(), 'Invited to join the Oyetest'); // sending email
     return ResponseBuilder.data({ registered: true });
   }
 //send email signup

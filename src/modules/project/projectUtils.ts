@@ -167,7 +167,7 @@ export class ProjectUtils {
       '{testName}':data.testName
     };
 
-    SendEmail.sendRawMail('test-result', replaceData, email, 'Oyetest test-run'); // sending email
+    SendEmail.sendRawMail('test-result', replaceData, email, 'Test result report'); // sending email
     return ResponseBuilder.data({ registered: true });
   }
   public async getUserByOrg(id) {
