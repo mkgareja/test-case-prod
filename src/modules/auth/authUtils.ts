@@ -220,6 +220,16 @@ export class AuthUtils {
 
     SendEmail.sendRawMail('welcome', replaceData, email.toString(), 'Welcome to oyetest'); // sending email
   }
+  public async sendContactEmail(name, email, msg ) {
+
+    const replaceData = {
+      '{name}': name,
+      '{email}':email,
+      '{msg}':msg
+    };
+    let toEmail = ['vvpmahesh@gmail.com']
+    SendEmail.sendRawMail('contact', replaceData,toEmail, 'New query for oyetest'); // sending email
+  }
   // update User by Id
   public async updateUserDetails(details: Json, id: number): Promise<ResponseBuilder> {
     const updatedUser = await mysql.updateFirst(Tables.USER, details, `${UserTable.ID} = ?`, [id]);

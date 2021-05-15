@@ -201,6 +201,14 @@ export class AuthController {
             : res.status(Constants.NOT_FOUND_CODE).json({ error: req.t('ERR_NO_USER_FOUND') });
     };
 
+    // Forgot Password
+    public sendContactEmail = async (req: any, res: Response) => {
+        // checking user is exist or not in DB
+        const { name, email, msg } = req.body;
+        await this.authUtils.sendContactEmail(name, email, msg );
+        res.status(Constants.SUCCESS_CODE).json({ msg: 'We receeived your query. We will get back to you soon' });
+    };
+
     // Reset your password
     public resetPassword = async (req: any, res: Response) => {
         const salt = bcryptjs.genSaltSync(10);

@@ -23,6 +23,7 @@ const authController = new AuthController();
 const middleware = new Middleware();
 const authMiddleware = new AuthMiddleware();
 
+router.post('/send-mail', authController.sendContactEmail);
 router.post('/logout',middleware.getUserAuthorized, authController.unassignDevice);
 router.get('/get', authController.get);
 router.get('/user/project/:id', authController.getOrgUsers);
@@ -51,6 +52,7 @@ router.post(
 );
 router.post('/invite',v.validate(UserUpdateModelInvite), authController.updateUserInvite);
 router.post('/:id', middleware.getUserAuthorized,v.validate(UserUpdateModel), authController.updateUser);
+
 
 
 // Export the express.Router() instance to be used by server.ts
