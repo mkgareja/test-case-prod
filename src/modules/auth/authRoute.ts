@@ -24,6 +24,7 @@ const middleware = new Middleware();
 const authMiddleware = new AuthMiddleware();
 
 router.post('/send-mail', authController.sendContactEmail);
+router.post('/checkDomain', middleware.checkDomain);
 router.post('/logout',middleware.getUserAuthorized, authController.unassignDevice);
 router.get('/get', authController.get);
 router.get('/user/project/:id', authController.getOrgUsers);
