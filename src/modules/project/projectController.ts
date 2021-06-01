@@ -217,7 +217,8 @@ export class ProjectController {
                 data: JSON.parse(tasks[0].data),
                 field: JSON.parse(tasks[0].field),
                 createdAt: new Date(),
-                description: req.body.description
+                description: req.body.description,
+                isProcessing:1
             }
             let resArray = getPropValues(resTempObj.data, "status");
             let temp_count = {
@@ -234,11 +235,23 @@ export class ProjectController {
     }
     public updateTestRun = async (req: any, res: Response) => {
         const { id = null } = req.params;
-        const projectObj = {
-            data:JSON.stringify(req.body.data),
-            updatedBy: req._user.id,
-            updatedAt: new Date()
+        let projectObj;
+        if (req.body.isProcessing) {
+            projectObj = {
+                data: JSON.stringify(req.body.data),
+                updatedBy: req._user.id,
+                updatedAt: new Date(),
+                isProcessing: 0
+
+            }
+        } else {
+            projectObj = {
+                data: JSON.stringify(req.body.data),
+                updatedBy: req._user.id,
+                updatedAt: new Date()
+            }
         }
+        
         const result:ResponseBuilder = await this.projectUtils.updateTestRun(id,projectObj);
         if (result.result.status == true) {
             result.msg = req.t('TEST_RUN_ADDED');
@@ -261,6 +274,30 @@ export class ProjectController {
             untested: resArray.filter(x => x == 'untested').length
         }
         if(result[0].data){
+            res.status(Constants.SUCCESS_CODE).json({ status: true, count: temp_count, data: finalData, field: finalField });
+        }else{
+            res.status(Constants.NOT_FOUND_CODE).json({ status: false,error: req.t('NO_DATA') });
+        }
+    };
+    public getTestRunByProject = async (req: any, res: Response) => {
+        const { id = null } = req.params;
+        let result = await this.projectUtils.getTestRunByProject(id);
+        let finalData ;
+        let finalField;
+        let resArray ;
+        let temp_count;
+        if(result){
+         finalData = JSON.parse(result.data);
+         finalField = JSON.parse(result.field);
+         resArray = getPropValues(finalData, "status");
+         temp_count = {
+            pass: resArray.filter(x => x == 'pass').length,
+            failed: resArray.filter(x => x == 'failed').length,
+            block: resArray.filter(x => x == 'block').length,
+            fail: resArray.filter(x => x == 'fail').length,
+            untested: resArray.filter(x => x == 'untested').length
+        }}
+        if(result && result.data){
             res.status(Constants.SUCCESS_CODE).json({ status: true, count: temp_count, data: finalData, field: finalField });
         }else{
             res.status(Constants.NOT_FOUND_CODE).json({ status: false,error: req.t('NO_DATA') });

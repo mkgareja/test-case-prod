@@ -120,12 +120,25 @@ export class ProjectUtils {
   }
   public async getTestRun(id) {
     const result = await mysql.findAll(Tables.TESTRUNS,
-      [TestrunsTable.FIELD,TestrunsTable.DATA,TestrunsTable.DESCRIPTION,TestrunsTable.CREATED_AT,TestrunsTable.NAME], `${TestrunsTable.IS_DELETE} = 0 AND ${TestrunsTable.IS_ENABLE} = 1 and ${TestrunsTable.ID} = ? ORDER BY ${TestrunsTable.CREATED_AT} DESC`, [id]);
-      if (result.length >= 0) {
-        return result;
-      } else {
-        return false;
-      }
+      [TestrunsTable.FIELD, TestrunsTable.DATA, TestrunsTable.DESCRIPTION, TestrunsTable.CREATED_AT, TestrunsTable.NAME], `${TestrunsTable.IS_DELETE} = 0 AND ${TestrunsTable.IS_ENABLE} = 1 and ${TestrunsTable.ID} = ? ORDER BY ${TestrunsTable.CREATED_AT} DESC`, [id]);
+    if (result.length >= 0) {
+      return result;
+    } else {
+      return false;
+    }
+
+  }
+  public async getTestRunByProject(id) {
+
+    const result = await mysql.first(Tables.TESTRUNS,
+      [TestrunsTable.FIELD, TestrunsTable.DATA, TestrunsTable.DESCRIPTION, TestrunsTable.CREATED_AT, TestrunsTable.NAME], `${TestrunsTable.IS_DELETE} = 0 AND ${TestrunsTable.IS_ENABLE} = 1 and ${TestrunsTable.ISPROCESSING} = 1 and ${TestrunsTable.PROJECTID} = ? ORDER BY ${TestrunsTable.CREATED_AT} DESC`, [id]);
+    if (result) {
+      return result;
+    } else {
+      return false;
+    }
+
+
   }
   public async getTestRuns(id) {
     const result = await mysql.findAll(

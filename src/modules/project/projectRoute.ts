@@ -32,6 +32,7 @@ router.delete('/:id',middleware.getUserAuthorized, projectController.deleteProje
 router.post('/run/:id',middleware.getUserAuthorized, projectController.addTestRun);
 router.post('/update/run/:id',middleware.getUserAuthorized, projectController.updateTestRun);
 router.get('/run/:id',middleware.getUserAuthorized, projectController.getTestRun);
+router.get('/run/projectid/:id',middleware.getUserAuthorized, projectController.getTestRunByProject);
 router.get('/result/:id',middleware.getUserAuthorized, projectController.getTestRuns);
 router.get('/analytics/result/:id/:limit',middleware.getUserAuthorized, projectController.getTestRunsAnalytics);
 
