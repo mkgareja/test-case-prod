@@ -207,7 +207,8 @@ export class ProjectController {
                 data: tasks[0].data,
                 field: tasks[0].field,
                 createdAt: new Date(),
-                description: req.body.description
+                description: req.body.description,
+                isProcessing:1
             }
             const resTempObj = {
                 id: uuid,
