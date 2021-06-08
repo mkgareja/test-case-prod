@@ -299,7 +299,7 @@ export class ProjectController {
             untested: resArray.filter(x => x == 'untested').length
         }}
         if(result && result.data){
-            res.status(Constants.SUCCESS_CODE).json({ id:result.id,status: true, count: temp_count, data: finalData, field: finalField });
+            res.status(Constants.SUCCESS_CODE).json({ name:result.name,id:result.id,status: true, count: temp_count, data: finalData, field: finalField });
         }else{
             res.status(Constants.NOT_FOUND_CODE).json({ status: false,error: req.t('NO_DATA') });
         }
