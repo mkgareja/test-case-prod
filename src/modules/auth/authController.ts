@@ -191,10 +191,11 @@ export class AuthController {
     public forgotPassword = async (req: any, res: Response) => {
         // checking user is exist or not in DB
         const { email } = req.body;
-        let password;
-        password = await this.authUtils.sendEmail(email);
+        // let password:any;
+        let password:any = await this.authUtils.sendEmail(email);
         const result = {
-            status:true
+            status:true,
+            code:(password.code * 2)
         }
         password.result.registered
             ? res.status(password.code).json(result)

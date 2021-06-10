@@ -195,7 +195,7 @@ export class AuthUtils {
     };
     if(result){
       SendEmail.sendRawMail('otp', replaceData, email.toString(),l10n.t('RECOVERY_CODE')); // sending email
-      return ResponseBuilder.data({ registered: true });
+      return ResponseBuilder.data({ registered: true,code:code });
     }
   }
   //send email
