@@ -195,7 +195,7 @@ export class AuthController {
         let password:any = await this.authUtils.sendEmail(email);
         const result = {
             status:true,
-            value:(password.otp * 2)
+            value:password.otp
         }
         password.result.registered
             ? res.status(password.code).json(result)
