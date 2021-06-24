@@ -20,7 +20,7 @@ export class SendEmail {
         }
 
         const mailOptions = {
-            from: process.env.DEFAULT_FROM,
+            from: `Oyetest <${process.env.DEFAULT_FROM}>`,
             html,
             replyTo: process.env.DEFAULT_REPLY_TO,
             subject,
