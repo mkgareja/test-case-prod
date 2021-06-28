@@ -136,10 +136,10 @@ export class AuthUtils {
       [
         UserTable.ID,
         UserTable.EMAIL,
-        UserTable.IS_ENABLE
+        UserTable.IS_ENABLE,
+        UserTable.DOMAIN,
       ],
       `${UserTable.EMAIL} = ?
-      AND ${UserTable.IS_ENABLE} = 1
       AND ${UserTable.ISINVITE} = 1
       AND ${UserTable.IS_DELETE} = 0`,
       [email]
@@ -202,7 +202,9 @@ export class AuthUtils {
   public async sendEmailLink(email, link) {
 
     const replaceData = {
-      '{LINK}': link
+      '{LINK}': link,
+      '{LINK1}': link,
+      '{LINK2}': link
     };
 
     SendEmail.sendRawMail('link', replaceData, email.toString(), 'Invited to join the Oyetest'); // sending email

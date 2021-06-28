@@ -92,6 +92,10 @@ export class ProjectController {
                     const msg = 'User added successfully ';
                     res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
                 }
+            }else{
+                await this.authUtils.sendEmailLink(req.body.email, `https://${user.domain}.oyetest.com/invite`)
+                const msg = 'User added and invited successfully ';
+                res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
             }
         } else {
             const userDetail = await this.projectUtils.getUserByOrg(req.body.orgId);
@@ -100,6 +104,7 @@ export class ProjectController {
                     id: uuid,
                     email: req.body.email,
                     isInvite: 1,
+                    isEnable:0,
                     organization:userDetail[0].organization,
                     domain:userDetail[0].domain,
                     country:userDetail[0].country

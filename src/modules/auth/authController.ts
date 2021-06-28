@@ -137,6 +137,7 @@ export class AuthController {
             const obj = {
                 firstname: req.body.firstname,
                 password: hash,
+                isEnable:1,
                 users: req.body.users,
                 mobile: req.body.mobile||''
             }
