@@ -53,7 +53,8 @@ export class ProjectController {
         const projectObjnew = {
             id: uuid2,
             projectid: req.body.pid,
-            userid: req.body.uid
+            userid: req.body.uid,
+            role:2
         }
         await this.projectUtils.addProjectUsers(projectObjnew);
         const msg = 'User added successfully ';

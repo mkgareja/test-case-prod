@@ -371,7 +371,8 @@ export enum projectUsersTable {
   IS_ENABLE = 'isEnable',
   IS_DELETE = 'isDelete',
   CREATED_AT='createdAt',
-  USERID = 'userid'
+  USERID = 'userid',
+  ROLE='role'
 }
 export enum TestrunsTable {
   ID = 'id',
