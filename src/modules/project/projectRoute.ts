@@ -15,6 +15,7 @@ const v: Validator = new Validator();
 const projectController = new ProjectController();
 
 router.get('/',middleware.getUserAuthorized, projectController.getProject)
+router.get('/org/user/:oid',middleware.getUserAuthorized, projectController.getOrgUsersInvited)
 router.post('/',middleware.getUserAuthorized, v.validate(ProjectModel), projectController.addProject);
 router.post('/invite',middleware.getUserAuthorized, projectController.inviteInProject);
 router.post('/email',middleware.getUserAuthorized, projectController.sendTestRunEmail);

@@ -4,6 +4,7 @@ import { ProjectUtils } from './projectUtils';
 import { v4 as uuidv4 } from 'uuid';
 import { AuthUtils } from '../auth/authUtils';
 import { ResponseBuilder } from '../../helpers/responseBuilder';
+import * as CryptoJS from 'crypto-js';
 const getPropValues = (o, prop) => (res => (JSON.stringify(o, (key, value) => (key === prop && res.push(value), value)), res))([]);
 
 export class ProjectController {
@@ -17,6 +18,14 @@ export class ProjectController {
             res.status(Constants.NOT_FOUND_CODE).json({ status: false,error: req.t('NO_DATA') });
         }
     };
+    public getOrgUsersInvited = async (req: any, res: Response) => {
+        let result = await this.authUtils.getOrgEmailWithName(req.params.oid);
+        if(result){
+            res.status(Constants.SUCCESS_CODE).json({ status: true, data: result });
+        }else{
+            res.status(Constants.NOT_FOUND_CODE).json({ status: false,error: req.t('NO_DATA') });
+        }
+    }
     public getTask = async (req: any, res: Response) => {
         const { id = null } = req.params;
         let result = await this.projectUtils.getTask(id);
@@ -68,6 +77,7 @@ export class ProjectController {
     public inviteInProject = async (req: any, res: Response) => {
         const uuid2 = uuidv4();
         const uuid = uuidv4();
+        var ciphertext = CryptoJS.AES.encrypt(req.body.email, 'secretkey123').toString();
         const user = await this.authUtils.checkUserEmailExistsInvite(req.body.email);
         if (user) {
             if (user.isEnable) {
@@ -94,7 +104,7 @@ export class ProjectController {
                     res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
                 }
             }else{
-                await this.authUtils.sendEmailLink(req.body.email, `https://${user.domain}.oyetest.com/invite`)
+                await this.authUtils.sendEmailLink(req.body.email, `https://${user.domain}.oyetest.com/invite?id=${ciphertext}`)
                 const msg = 'User added and invited successfully ';
                 res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
             }
@@ -105,6 +115,7 @@ export class ProjectController {
                     id: uuid,
                     email: req.body.email,
                     isInvite: 1,
+                    role:0,
                     isEnable:0,
                     organization:userDetail[0].organization,
                     domain:userDetail[0].domain,
@@ -126,7 +137,7 @@ export class ProjectController {
                 //     userid: uuid
                 // }
                 // await this.projectUtils.addProjectUsers(projectObjnew);
-                await this.authUtils.sendEmailLink(req.body.email, `https://${userDetail[0].domain}.oyetest.com/invite`)
+                await this.authUtils.sendEmailLink(req.body.email, `https://${userDetail[0].domain}.oyetest.com/invite?id=${ciphertext}`)
                 const msg = 'User added and invited successfully ';
                 res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
             }

@@ -267,5 +267,13 @@ export class AuthUtils {
     }
     
   }
+  public async getOrgEmailWithName(oid: any) {
+    try {
+      return await mysql.findAll(Tables.USER, [UserTable.EMAIL,UserTable.FIRSTNAME,UserTable.ISINVITE,UserTable.IS_ENABLE], `${UserTable.ORGANIZATION} = ? and ${UserTable.IS_DELETE} =0 and ${UserTable.ISINVITE}=1`, [oid]);  
+    } catch (error) {
+      console.log(error)
+    }
+
+  }
 
 }
