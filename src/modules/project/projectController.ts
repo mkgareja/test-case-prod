@@ -11,7 +11,13 @@ export class ProjectController {
     private authUtils: AuthUtils = new AuthUtils();
     private projectUtils: ProjectUtils = new ProjectUtils();
     public getProject = async (req: any, res: Response) => {
-        let result = await this.projectUtils.getProjects(req._user.id);
+        let result;
+        if(req._user.role==1){
+            result = await this.projectUtils.getProjectsByOrg(req._user.organization);
+        }else{
+            result = await this.projectUtils.getProjects(req._user.id);
+        }
+        
         if(result){
             res.status(Constants.SUCCESS_CODE).json({ status: true, data: result });
         }else{
@@ -49,7 +55,8 @@ export class ProjectController {
         const projectObjnew = {
             id:uuid2,
             projectid: uuid,
-            userid:req._user.id
+            userid:req._user.id,
+            orgid:req._user.organization
         }
         // creating user profile
         const result:any = await this.projectUtils.addProject(projectObj);
@@ -63,7 +70,8 @@ export class ProjectController {
             id: uuid2,
             projectid: req.body.pid,
             userid: req.body.uid,
-            role:2
+            role:0,
+            orgid:req._user.organization
         }
         await this.projectUtils.addProjectUsers(projectObjnew);
         const msg = 'User added successfully ';
@@ -100,6 +108,20 @@ export class ProjectController {
                     }
                     // creating user profile
                     await this.authUtils.createUserOrgUsers(objOrguser);
+                    if(req.body.projects){
+                         req.body.projects.forEach(element => {
+                            const uuid2 = uuidv4();
+                            const projectObjnew = {
+                                id: uuid2,
+                                projectid: element.id,
+                                userid: user.id,
+                                role:0,
+                                orgid:req._user.organization
+                            }
+                            this.projectUtils.addProjectUsers(projectObjnew);
+                        });
+                    }
+                    
                     const msg = 'User added successfully ';
                     res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
                 }
@@ -137,6 +159,19 @@ export class ProjectController {
                 //     userid: uuid
                 // }
                 // await this.projectUtils.addProjectUsers(projectObjnew);
+                if(req.body.projects){
+                    req.body.projects.forEach(element => {
+                       const uuid2 = uuidv4();
+                       const projectObjnew = {
+                           id: uuid2,
+                           projectid: element.value,
+                           userid: uuid,
+                           role:0,
+                           orgid:req._user.organization
+                       }
+                       this.projectUtils.addProjectUsers(projectObjnew);
+                   });
+               }
                 await this.authUtils.sendEmailLink(req.body.email, `https://${userDetail[0].domain}.oyetest.com/invite?id=${ciphertext}`)
                 const msg = 'User added and invited successfully ';
                 res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });

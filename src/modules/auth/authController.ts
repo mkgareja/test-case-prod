@@ -127,6 +127,18 @@ export class AuthController {
             res.status(Constants.NOT_FOUND_CODE).json(result);
         }
     };
+    public updateUserRole = async (req: any, res: Response) => {
+        const obj = {
+            role: 2,
+        }
+        const result: ResponseBuilder = await this.authUtils.updateUserByEmail(req.body.email,obj);
+        if(result.result.status == true){
+            result.msg= req.t('USER_UPDATED_SUCCESS');
+            res.status(Constants.SUCCESS_CODE).json(result);
+        } else {
+            res.status(Constants.NOT_FOUND_CODE).json(result);
+        }
+    };
     // update user
     public updateUserInvite = async (req: any, res: Response) => {
         const user = await this.authUtils.checkUserEmailExistsInvite(req.body.email);

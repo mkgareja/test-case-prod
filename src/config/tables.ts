@@ -337,7 +337,8 @@ export enum UserTable {
   ISINVITE='isInvite',
   LAST_LOGIN ='lastLogin',
   DOMAIN ='domain',
-  ORGANIZATION='organization'
+  ORGANIZATION='organization',
+  ROLE='role'
 }
 
 // Devices table's fields
@@ -372,7 +373,8 @@ export enum projectUsersTable {
   IS_DELETE = 'isDelete',
   CREATED_AT='createdAt',
   USERID = 'userid',
-  ROLE='role'
+  ROLE='role',
+  ORGID='orgid'
 }
 export enum TestrunsTable {
   ID = 'id',

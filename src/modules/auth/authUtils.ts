@@ -90,6 +90,14 @@ export class AuthUtils {
       return ResponseBuilder.data({ status: false });
     }
   }
+  public async updateUserByEmail(email:any , userInfo: Json): Promise<ResponseBuilder> {
+    const result = await mysql.updateFirst(Tables.USER, userInfo, `${UserTable.EMAIL} = ?`, [email]);
+    if (result.affectedRows > 0) {
+      return ResponseBuilder.data({ status: true,data:result});
+    } else {
+      return ResponseBuilder.data({ status: false });
+    }
+  }
 
   // check user email is exists or not
   public async checkUserMobileNumberExists(mobileNumber: string) {
@@ -258,6 +266,9 @@ export class AuthUtils {
   public async checkDeviceRegistered(id: number) {
     return await mysql.first(Tables.DEVICE, [DeviceTable.ID], `${DeviceTable.ID} = ?`, [id]);
   }
+  public async getOrgByUid(id: any) {
+    return await mysql.first(Tables.USER, [UserTable.ORGANIZATION], `${UserTable.ID} = ?`, [id]);
+  }
 
   public async getOrgEmail(id: any) {
     try {
@@ -269,7 +280,7 @@ export class AuthUtils {
   }
   public async getOrgEmailWithName(oid: any) {
     try {
-      return await mysql.findAll(Tables.USER, [UserTable.EMAIL,UserTable.FIRSTNAME,UserTable.ISINVITE,UserTable.IS_ENABLE], `${UserTable.ORGANIZATION} = ? and ${UserTable.IS_DELETE} =0 and ${UserTable.ISINVITE}=1`, [oid]);  
+      return await mysql.findAll(Tables.USER, [UserTable.ROLE,UserTable.EMAIL,UserTable.FIRSTNAME,UserTable.ISINVITE,UserTable.IS_ENABLE], `${UserTable.ORGANIZATION} = ? and ${UserTable.IS_DELETE} =0 and ${UserTable.ISINVITE}=1`, [oid]);  
     } catch (error) {
       console.log(error)
     }
