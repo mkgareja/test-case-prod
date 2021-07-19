@@ -146,6 +146,7 @@ export class AuthUtils {
         UserTable.EMAIL,
         UserTable.IS_ENABLE,
         UserTable.DOMAIN,
+        UserTable.ORGANIZATION,
       ],
       `${UserTable.EMAIL} = ?
       AND ${UserTable.ISINVITE} = 1

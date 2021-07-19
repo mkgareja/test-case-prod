@@ -82,22 +82,27 @@ export class ProjectUtils {
       }
   }
   public async getProjectsByOrg(id) {
-    const result =  await mysql.findAll(`${Tables.PROJECT} p
-        LEFT JOIN ${Tables.PROJECTUSERS} pu on p.${ProjectTable.ID} = pu.${projectUsersTable.PROJECTID}`,[
-        `p.${ProjectTable.ID}`,
-        `p.${ProjectTable.NAME}`,
-        `p.${ProjectTable.TYPE}`,
-        `p.${ProjectTable.DESC}`,
-        `p.${ProjectTable.CREATED_AT}`,
-        `pu.${projectUsersTable.ROLE}`,
-        ],
-        `p.${ProjectTable.IS_DELETE} = 0 AND p.${ProjectTable.IS_ENABLE} = 1 AND  pu.${projectUsersTable.ORGID} = ? GROUP BY p.${ProjectTable.ID},pu.${projectUsersTable.ROLE} ORDER BY p.${ProjectTable.CREATED_AT} DESC`,
-        [id]);
-      if (result.length >= 0) {
-        return result;
-      } else {
-        return false;
-      }
+    try {
+      const result =  await mysql.findAll(`${Tables.PROJECT} p
+      LEFT JOIN ${Tables.PROJECTUSERS} pu on p.${ProjectTable.ID} = pu.${projectUsersTable.PROJECTID}`,[
+      `p.${ProjectTable.ID}`,
+      `p.${ProjectTable.NAME}`,
+      `p.${ProjectTable.TYPE}`,
+      `p.${ProjectTable.DESC}`,
+      `p.${ProjectTable.CREATED_AT}`,
+      `MAX(pu.${projectUsersTable.ROLE}) as role`,
+      ],
+      `p.${ProjectTable.IS_DELETE} = 0 AND p.${ProjectTable.IS_ENABLE} = 1 AND  pu.${projectUsersTable.ORGID} = ? GROUP BY p.${ProjectTable.ID} ORDER BY p.${ProjectTable.CREATED_AT} DESC`,
+      [id]);
+    if (result.length >= 0) {
+      return result;
+    } else {
+      return false;
+    }
+    } catch (error) {
+      console.log(error)
+    }
+   
   }
   public async getTask(id) {
     const result = await mysql.findAll(Tables.PROJECT,

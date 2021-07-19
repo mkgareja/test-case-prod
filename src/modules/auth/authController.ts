@@ -161,6 +161,7 @@ export class AuthController {
                 status: true,
                 firstname: req.body.firstname,
                 email: req.body.email,
+                organization:user.organization,
                 msg: req.t('SIGNUP_LOGIN_SUCCESS'),
             };
             res.status(result.code).json(userDetails);
