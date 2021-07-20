@@ -12,7 +12,7 @@ export class ProjectController {
     private projectUtils: ProjectUtils = new ProjectUtils();
     public getProject = async (req: any, res: Response) => {
         let result;
-        if(req._user.role==1){
+        if (req._user.role == 1 || req._user.role == 2) {
             result = await this.projectUtils.getProjectsByOrg(req._user.organization);
         }else{
             result = await this.projectUtils.getProjects(req._user.id);
@@ -85,7 +85,8 @@ export class ProjectController {
     public inviteInProject = async (req: any, res: Response) => {
         const uuid2 = uuidv4();
         const uuid = uuidv4();
-        var ciphertext = CryptoJS.AES.encrypt(req.body.email, 'secretkey123').toString();
+        let ciphertext = CryptoJS.AES.encrypt(req.body.email, 'secretkey123').toString();
+        ciphertext=ciphertext.toString().replace('+','xMl3Jk').replace('/','Por21Ld').replace('=','Ml32');
         const user = await this.authUtils.checkUserEmailExistsInvite(req.body.email);
         if (user) {
             if (user.isEnable) {
