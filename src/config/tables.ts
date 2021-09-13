@@ -12,6 +12,7 @@ export class Tables {
   public static readonly STATIC_CONTENT = 'staticcontent';
   public static readonly DEVICE = 'devices';
   public static readonly PROJECT = 'projects';
+  public static readonly MERGE = 'testmerge';
   public static readonly TASKS = 'tasks';
   public static readonly TESTRUNS = 'testruns';
   public static readonly SUBTASKS = 'subtasks';
@@ -365,6 +366,20 @@ export enum ProjectTable {
   TYPE = 'type',
   DESC = 'description',
   FIELD = 'field'
+}
+export enum TestMergeTable {
+  ID = 'id',
+  ORGID='orgid',
+  SOURCE_PID='source_pid',
+  DESTINATION_PID='destination_pid',
+  MERGED_DATA='merged_data',
+  STATUS='status',
+  IS_ENABLE = 'isEnable',
+  IS_DELETE = 'isDelete',
+  CREATED_AT='createdAt',
+  CHANGEDBY ='changedBy',
+  USERID = 'userid',
+  MERGE_NO = 'merge_no'
 }
 export enum projectUsersTable {
   ID = 'id',

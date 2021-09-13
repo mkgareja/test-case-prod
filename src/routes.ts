@@ -5,6 +5,7 @@ import { AuthRoute } from './modules/auth/authRoute';
 import { CMSRoute } from './modules/cms/cmsRoute';
 import { DeviceRoute } from './modules/device/deviceRoute';
 import { ProjectRoute } from './modules/project/projectRoute';
+import { MergeRoute } from './modules/merge/mergeRoute';
 import { TaskRoute } from './modules/task/taskRoute';
 import { CategoryRoute } from './modules/category/categoryRoute';
 import { StoreRoute } from './modules/store/storeRoute';
@@ -36,6 +37,7 @@ export class Routes {
 
     router.use('/auth', AuthRoute);
     router.use('/projects', ProjectRoute);
+    router.use('/merge', MergeRoute);
     router.use('/task', TaskRoute);
     router.use('/cms', CMSRoute);
     router.use('/devices', DeviceRoute);
