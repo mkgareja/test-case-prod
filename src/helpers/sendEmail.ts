@@ -4,6 +4,8 @@ import * as nodemailer from "nodemailer";
 import * as path from "path";
 import { Constants } from "../config/constants";
 import { Log } from "./logger";
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 export class SendEmail {
 
@@ -28,25 +30,40 @@ export class SendEmail {
             text,
         };
 
+
         let transportObj;
         if (process.env.ENV === Constants.environments.DEVELOPMENT) {
-            transportObj = nodemailer.createTransport({
-                host: process.env.AWS_SMTP_HOST,
-                port: process.env.AWS_SMTP_PORT,
+            // transportObj = nodemailer.createTransport({
+            //     host: process.env.AWS_SMTP_HOST,
+            //     port: process.env.AWS_SMTP_PORT,
+            //     auth: {
+            //         user: process.env.ACCESS_KEY,
+            //         pass: process.env.SECRET_KEY,
+            //     }
+            // })
+             transportObj = nodemailer.createTransport({
+                service: 'SendGrid',
                 auth: {
-                    user: process.env.ACCESS_KEY,
-                    pass: process.env.SECRET_KEY,
+                  user: 'apikey',
+                  pass: process.env.SENDGRID_KEY
                 }
-            })
+              });
         } else {
-            transportObj = nodemailer.createTransport({
-                host: process.env.AWS_SMTP_HOST,
-                port: process.env.AWS_SMTP_PORT,
+            // transportObj = nodemailer.createTransport({
+            //     host: process.env.AWS_SMTP_HOST,
+            //     port: process.env.AWS_SMTP_PORT,
+            //     auth: {
+            //         user: process.env.ACCESS_KEY,
+            //         pass: process.env.SECRET_KEY,
+            //     }
+            // })
+                transportObj = nodemailer.createTransport({
+                service: 'SendGrid',
                 auth: {
-                    user: process.env.ACCESS_KEY,
-                    pass: process.env.SECRET_KEY,
+                    user: 'apikey',
+                    pass: process.env.SENDGRID_KEY
                 }
-            })
+              });
         }
 
 

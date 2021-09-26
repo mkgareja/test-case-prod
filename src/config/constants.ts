@@ -2,6 +2,7 @@ import * as Enum from 'enum';
 import { Tables } from '../config/tables';
 
 export class Constants {
+  public static readonly CRASH_EMAIL = 'vvpmahesh@gmail.com';
   public static readonly REVIEW_RETURN_LIMIT = 10;
   public static readonly EMAIL_TEXT ='iXopp Support';
   public static readonly LIMIT = 10;

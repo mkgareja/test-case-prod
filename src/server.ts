@@ -14,6 +14,7 @@ import * as trimRequest from 'trim-request';
 import { Log } from './helpers/logger';
 import { SendEmail } from './helpers/sendEmail';
 import { Routes } from './routes';
+import { Constants } from './config/constants';
 
 dotenv.config();
 
@@ -95,8 +96,8 @@ export class App {
           SendEmail.sendRawMail(
             null,
             null,
-            [process.env.EXCEPTION_MAIL],
-            `iXopp - API (${NODE_ENV}) - Unhandled Crash`,
+            [Constants.CRASH_EMAIL],
+            `Oyetest (${NODE_ENV}) - Unhandled Crash`,
             err.stack
           ); // sending exception email
           return;
