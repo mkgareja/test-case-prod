@@ -2,7 +2,7 @@ import * as mysql from 'jm-ez-mysql';
 import * as moment from 'moment';
 
 import { Constants } from '../../config/constants';
-import { Tables, UserTable, DeviceTable,StaticContentTable, ProjectTable } from '../../config/tables';
+import { Tables, UserTable, DeviceTable,StaticContentTable, ProjectTable,OrganizationTable,OrganizationUsersTable,projectUsersTable, OrgEmailsTable } from '../../config/tables';
 import { ResponseBuilder } from '../../helpers/responseBuilder';
 import { LoginModel } from './authModel';
 import { SMSUtils } from '../../helpers/smsUtils';
@@ -17,9 +17,81 @@ export class AuthUtils {
     console.log('newUser-->'+JSON.stringify(newUser))
     return ResponseBuilder.data({ id: newUser });
   }
+  public async createUserOrg(userDetail: Json): Promise<ResponseBuilder> {
+    const newUser = await mysql.insert(Tables.ORGANIZATION, userDetail);
+    return ResponseBuilder.data({ id: newUser });
+  }
+  public async updateOrg(orgId: any, orgInfo: Json): Promise<ResponseBuilder> {
+    try {
+      const result = await mysql.updateFirst(Tables.ORGANIZATION, orgInfo, `${OrganizationTable.ID} = ?`, [orgId]);
+      if (result.affectedRows > 0) {
+        return ResponseBuilder.data({ status: true, data: result });
+      } else {
+        return ResponseBuilder.data({ status: false });
+      }
+    } catch (error) {
+      console.log(error)
+    }
 
+  }
+  public async updateOrgEmail(orgInfo: Json): Promise<ResponseBuilder> {
+    try {
+      const newUser = await mysql.insert(Tables.ORGEMAIL, orgInfo);
+      return ResponseBuilder.data({ id: newUser });
+    } catch (error) {
+      console.log(error)
+    }
+    
+  }
+  public async getProjectsUser(id) {
+    try {
+      const result =  await mysql.findAll(`${Tables.PROJECTUSERS} pu
+      LEFT JOIN ${Tables.USER} u on pu.${projectUsersTable.USERID} = u.${UserTable.ID}`,[
+      `u.${UserTable.ID}`,
+      `u.${UserTable.FIRSTNAME}`,
+      `u.${UserTable.EMAIL}`
+      ],
+      `u.${UserTable.IS_DELETE} = 0 AND u.${UserTable.IS_ENABLE} = 1 AND  pu.${projectUsersTable.PROJECTID} = ? `,
+      [id]);
+    if (result.length >= 0) {
+      return result;
+    } else {
+      return false;
+    }
+    } catch (error) {
+      console.log('error'+error)
+    }
+   
+  }
+  public async getUser(pid,orgid) {
+    try {
+      const result =  await mysql.query(`SELECT ou.*,u.* FROM orgUsers as ou left join users as u on ou.userid=u.id 
+      where not exists(select 1 from projectUsers pu where pu.userId = ou.userid and pu.projectid = ?) and ou.orgId=?;`,
+      [pid,orgid]);
+    if (result.length >= 0) {
+      return result;
+    } else {
+      return false;
+    }
+    } catch (error) {
+      console.log('error'+error)
+    }
+   
+  }
+  public async createUserOrgUsers(userDetail: Json): Promise<ResponseBuilder> {
+    const newUser = await mysql.insert(Tables.ORGANIZATIONUSER, userDetail);
+    return ResponseBuilder.data({ id: newUser });
+  }
   public async updateUser(uid: number , userInfo: Json): Promise<ResponseBuilder> {
     const result = await mysql.updateFirst(Tables.USER, userInfo, `${UserTable.ID} = ?`, [uid]);
+    if (result.affectedRows > 0) {
+      return ResponseBuilder.data({ status: true,data:result});
+    } else {
+      return ResponseBuilder.data({ status: false });
+    }
+  }
+  public async updateUserByEmail(email:any , userInfo: Json): Promise<ResponseBuilder> {
+    const result = await mysql.updateFirst(Tables.USER, userInfo, `${UserTable.EMAIL} = ?`, [email]);
     if (result.affectedRows > 0) {
       return ResponseBuilder.data({ status: true,data:result});
     } else {
@@ -56,7 +128,8 @@ export class AuthUtils {
           UserTable.EMAIL,
           UserTable.PASSWORD,
           UserTable.IS_ENABLE,
-          UserTable.DOMAIN
+          UserTable.DOMAIN,
+          UserTable.ORGANIZATION
         ],
         `${UserTable.EMAIL} = ?
         AND ${UserTable.IS_ENABLE} = 1
@@ -71,10 +144,11 @@ export class AuthUtils {
       [
         UserTable.ID,
         UserTable.EMAIL,
-        UserTable.IS_ENABLE
+        UserTable.IS_ENABLE,
+        UserTable.DOMAIN,
+        UserTable.ORGANIZATION,
       ],
       `${UserTable.EMAIL} = ?
-      AND ${UserTable.IS_ENABLE} = 1
       AND ${UserTable.ISINVITE} = 1
       AND ${UserTable.IS_DELETE} = 0`,
       [email]
@@ -130,17 +204,19 @@ export class AuthUtils {
     };
     if(result){
       SendEmail.sendRawMail('otp', replaceData, email.toString(),l10n.t('RECOVERY_CODE')); // sending email
-      return ResponseBuilder.data({ registered: true });
+      return ResponseBuilder.data({ registered: true,otp:code });
     }
   }
   //send email
   public async sendEmailLink(email, link) {
 
     const replaceData = {
-      '{LINK}': link
+      '{LINK}': link,
+      '{LINK1}': link,
+      '{LINK2}': link
     };
 
-    SendEmail.sendRawMail('link', replaceData, email.toString(), 'Join oyetest'); // sending email
+    SendEmail.sendRawMail('link', replaceData, email.toString(), 'Invited to join the Oyetest'); // sending email
     return ResponseBuilder.data({ registered: true });
   }
 //send email signup
@@ -154,6 +230,16 @@ export class AuthUtils {
     };
 
     SendEmail.sendRawMail('welcome', replaceData, email.toString(), 'Welcome to oyetest'); // sending email
+  }
+  public async sendContactEmail(name, email, msg ) {
+
+    const replaceData = {
+      '{name}': name,
+      '{email}':email,
+      '{msg}':msg
+    };
+    let toEmail = ['vvpmahesh@gmail.com']
+    SendEmail.sendRawMail('contact', replaceData,toEmail, 'New query for oyetest'); // sending email
   }
   // update User by Id
   public async updateUserDetails(details: Json, id: number): Promise<ResponseBuilder> {
@@ -180,6 +266,26 @@ export class AuthUtils {
   // Get User devices
   public async checkDeviceRegistered(id: number) {
     return await mysql.first(Tables.DEVICE, [DeviceTable.ID], `${DeviceTable.ID} = ?`, [id]);
+  }
+  public async getOrgByUid(id: any) {
+    return await mysql.first(Tables.USER, [UserTable.ORGANIZATION], `${UserTable.ID} = ?`, [id]);
+  }
+
+  public async getOrgEmail(id: any) {
+    try {
+      return await mysql.findAll(Tables.ORGEMAIL, [OrgEmailsTable.EMAIL], `${OrgEmailsTable.ORGID} = ? and ${OrgEmailsTable.IS_ENABLE} =1`, [id]);  
+    } catch (error) {
+      console.log(error)
+    }
+    
+  }
+  public async getOrgEmailWithName(oid: any) {
+    try {
+      return await mysql.findAll(Tables.USER, [UserTable.ROLE,UserTable.EMAIL,UserTable.FIRSTNAME,UserTable.ISINVITE,UserTable.IS_ENABLE], `${UserTable.ORGANIZATION} = ? and ${UserTable.IS_DELETE} =0 and ${UserTable.ISINVITE}=1`, [oid]);  
+    } catch (error) {
+      console.log(error)
+    }
+
   }
 
 }

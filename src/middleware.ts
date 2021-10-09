@@ -3,7 +3,7 @@ import * as mysql from 'jm-ez-mysql';
 import { isEmpty } from 'lodash';
 
 import { Constants } from './config/constants';
-import { Tables, UserTable, DeviceTable } from './config/tables';
+import { Tables, UserTable, DeviceTable,OrganizationTable } from './config/tables';
 import { Jwt } from './helpers/jwt';
 
 export class Middleware {
@@ -95,6 +95,41 @@ export class Middleware {
       next();
     }
   };
+  public checkDomain = async (req: any, res: Response, next: () => void) => {
+    if (req.body) {
+      try {
+        const domain = await mysql.first(
+          `${Tables.ORGANIZATION}`,
+          [
+            `${OrganizationTable.ID}`,
+          ],
+          `${OrganizationTable.NAME} = ? AND ${UserTable.IS_ENABLE} = 1 AND ${UserTable.IS_DELETE} = 0`,
+          [req.body.domain]
+        );
+        if (domain) {
+          res
+            .status(Constants.SUCCESS_CODE)
+            .json({ msg: 'Team Name not available',code:400 });
+          return;
+        } else {
+          res
+            .status(Constants.SUCCESS_CODE)
+            .json({ msg: 'Looks good',code:200 });
+          return;
+        }
+      } catch (error) {
+        res
+        .status(Constants.SUCCESS_CODE)
+        .json({ msg: 'Team Name not available',code:400 });
+        return;
+      }
+    } else {
+      res
+      .status(Constants.SUCCESS_CODE)
+      .json({ msg: 'Team Name not available',code:400 });
+      return;
+    }
+  };
 
   public getUserAuthorized = async (req: any, res: Response, next: () => void) => {
     if (req.headers.authorization && !isEmpty(req.headers.authorization)) {
@@ -107,7 +142,9 @@ export class Middleware {
               `${UserTable.ID}`,
               `${UserTable.FIRSTNAME}`,
               `${UserTable.LASTNAME}`,
-              `${UserTable.EMAIL}`
+              `${UserTable.EMAIL}`,
+              `${UserTable.ORGANIZATION}`,
+              `${UserTable.ROLE}`
             ],
             `${UserTable.ID} = ? AND ${UserTable.IS_ENABLE} = 1 AND ${UserTable.IS_DELETE} = 0`,
             [tokenInfo.userId]

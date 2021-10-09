@@ -19,7 +19,7 @@ export class AuthMiddleware {
     // check credentials matches or not
     if (user && (await bcryptjs.compare(req.body.password, user.password))) {
       if (user.isEnable) {
-        if (req.body.domain == 'localhost' || req.body.domain == user.domain) {
+        if (req.body.domain == 'www' || req.body.domain == 'oyetest'|| req.body.domain == 'localhost' || req.body.domain.toUpperCase() == user.domain.toUpperCase()) {
           req.body._authentication = user;
           next();
         } else {

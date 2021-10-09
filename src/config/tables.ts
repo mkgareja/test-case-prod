@@ -12,9 +12,13 @@ export class Tables {
   public static readonly STATIC_CONTENT = 'staticcontent';
   public static readonly DEVICE = 'devices';
   public static readonly PROJECT = 'projects';
+  public static readonly MERGE = 'testmerge';
   public static readonly TASKS = 'tasks';
   public static readonly TESTRUNS = 'testruns';
   public static readonly SUBTASKS = 'subtasks';
+  public static readonly ORGANIZATION = 'organization';
+  public static readonly ORGEMAIL = 'orgEmail';
+  public static readonly ORGANIZATIONUSER = 'orgUsers';
   public static readonly STORE = 'store';
   public static readonly STOREOWNER = 'storeowner';
   public static readonly CATEGORY = 'categories';
@@ -334,7 +338,8 @@ export enum UserTable {
   ISINVITE='isInvite',
   LAST_LOGIN ='lastLogin',
   DOMAIN ='domain',
-  ORGANIZATION='organization'
+  ORGANIZATION='organization',
+  ROLE='role'
 }
 
 // Devices table's fields
@@ -362,13 +367,29 @@ export enum ProjectTable {
   DESC = 'description',
   FIELD = 'field'
 }
+export enum TestMergeTable {
+  ID = 'id',
+  ORGID='orgid',
+  SOURCE_PID='source_pid',
+  DESTINATION_PID='destination_pid',
+  MERGED_DATA='merged_data',
+  STATUS='status',
+  IS_ENABLE = 'isEnable',
+  IS_DELETE = 'isDelete',
+  CREATED_AT='createdAt',
+  CHANGEDBY ='changedBy',
+  USERID = 'userid',
+  MERGE_NO = 'merge_no'
+}
 export enum projectUsersTable {
   ID = 'id',
   PROJECTID = 'projectid',
   IS_ENABLE = 'isEnable',
   IS_DELETE = 'isDelete',
   CREATED_AT='createdAt',
-  USERID = 'userid'
+  USERID = 'userid',
+  ROLE='role',
+  ORGID='orgid'
 }
 export enum TestrunsTable {
   ID = 'id',
@@ -381,7 +402,10 @@ export enum TestrunsTable {
   PROJECTID = 'projectid',
   DATA = 'data',
   FIELD = 'field',
-  DESCRIPTION='description'
+  DESCRIPTION='description',
+  UPDATEDBY='updatedBy',
+  UPDATEDAT='updatedAt',
+  ISPROCESSING='isProcessing'
 }
 
 export enum TaskTable {
@@ -394,7 +418,31 @@ export enum TaskTable {
   PID = 'projectid',
   DESC = 'description'
 }
-
+export enum OrganizationTable {
+  ID = 'id',
+  NAME = 'name',
+  IS_ENABLE = 'isEnable',
+  IS_DELETE = 'isDelete',
+  CREATED_AT='createdAt',
+  USERID ='userId',
+  EMAIL ='email'
+}
+export enum OrganizationUsersTable {
+  ID = 'id',
+  ORGID = 'orgId',
+  USERID ='userId',
+  IS_ENABLE = 'isEnable',
+  IS_DELETE = 'isDelete',
+  CREATED_AT='createdAt'
+}
+export enum OrgEmailsTable {
+  ID = 'id',
+  ORGID = 'orgId',
+  IS_ENABLE = 'isEnable',
+  EMAIL = 'email',
+  IS_DELETE = 'isDelete',
+  CREATED_AT='createdAt'
+}
 export enum SubTaskTable {
   ID = 'id',
   TITLE = 'title',

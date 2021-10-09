@@ -14,6 +14,7 @@ import * as trimRequest from 'trim-request';
 import { Log } from './helpers/logger';
 import { SendEmail } from './helpers/sendEmail';
 import { Routes } from './routes';
+import { Constants } from './config/constants';
 
 dotenv.config();
 
@@ -90,12 +91,13 @@ export class App {
       this.logger.info(`The server is running in port localhost: ${process.env.PORT}`);
       this.app.use((err: any, req: any, res: any, next: () => void) => {
         if (err) {
+          this.logger.info(`Error main: ${err.message}`);
           res.status(500).json({ error: req.t('ERR_INTERNAL_SERVER') });
           SendEmail.sendRawMail(
             null,
             null,
-            [process.env.EXCEPTION_MAIL],
-            `iXopp - API (${NODE_ENV}) - Unhandled Crash`,
+            [Constants.CRASH_EMAIL],
+            `Oyetest (${NODE_ENV}) - Unhandled Crash`,
             err.stack
           ); // sending exception email
           return;
