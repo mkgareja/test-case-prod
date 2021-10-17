@@ -299,10 +299,35 @@ export class ProjectController {
             
         }
     }
+    public getObjects = async (obj, key, val, newVal) => {
+        let newValue = newVal;
+        let objects = [];
+        for (let i in obj) {
+            if (!obj.hasOwnProperty(i)) continue;
+            if (typeof obj[i] == 'object') {
+                objects = objects.concat(this.getObjects(obj[i], key, val, newValue));
+            } else if (i == key && obj[key] == val) {
+                obj['flag'] = 1;
+            }
+        }
+        return obj;
+    }
     public updateTestRun = async (req: any, res: Response) => {
         const { id = null } = req.params;
         let projectObj;
-        if (req.body.isProcessing) {
+        let flag = req.body.flag || '';
+        if (flag) {
+            let result = await this.projectUtils.getTestRun(id);
+            let finalData = JSON.parse(result[0].data);
+            let newData = await this.getObjects(finalData, 'id', req.body.tid, flag)
+            projectObj = {
+                data: JSON.stringify(newData),
+                updatedBy: req._user.id,
+                updatedAt: new Date(),
+                isProcessing: 0
+
+            }
+        } else if (req.body.isProcessing) {
             projectObj = {
                 data: JSON.stringify(req.body.data),
                 updatedBy: req._user.id,
@@ -317,8 +342,8 @@ export class ProjectController {
                 updatedAt: new Date()
             }
         }
-        
-        const result:ResponseBuilder = await this.projectUtils.updateTestRun(id,projectObj);
+
+        const result: ResponseBuilder = await this.projectUtils.updateTestRun(id, projectObj);
         if (result.result.status == true) {
             result.msg = req.t('TEST_RUN_ADDED');
             res.status(Constants.SUCCESS_CODE).json(result);
