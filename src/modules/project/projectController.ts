@@ -307,7 +307,7 @@ export class ProjectController {
             if (typeof obj[i] == 'object') {
                 objects = objects.concat(this.getObjects(obj[i], key, val, newValue));
             } else if (i == key && obj[key] == val) {
-                obj['flag'] = 1;
+                obj['flag'] = newVal;
             }
         }
         return obj;
