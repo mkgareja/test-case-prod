@@ -308,6 +308,7 @@ export class ProjectController {
                 objects = objects.concat(this.getObjects(obj[i], key, val, newValue));
             } else if (i == key && obj[key] == val) {
                 obj['flag'] = newVal;
+                obj['testing'] = 'automated';
             }
         }
         return obj;
