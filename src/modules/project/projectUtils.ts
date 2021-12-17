@@ -65,13 +65,17 @@ export class ProjectUtils {
   }
   public async getProjects(id) {
     const result =  await mysql.findAll(`${Tables.PROJECT} p
-        LEFT JOIN ${Tables.PROJECTUSERS} pu on p.${ProjectTable.ID} = pu.${projectUsersTable.PROJECTID}`,[
+        LEFT JOIN ${Tables.PROJECTUSERS} pu on p.${ProjectTable.ID} = pu.${projectUsersTable.PROJECTID}
+        LEFT JOIN ${Tables.USER} u on u.${UserTable.ID} = pu.${projectUsersTable.USERID}`,[
         `p.${ProjectTable.ID}`,
         `p.${ProjectTable.NAME}`,
         `p.${ProjectTable.TYPE}`,
         `p.${ProjectTable.DESC}`,
         `p.${ProjectTable.CREATED_AT}`,
         `pu.${projectUsersTable.ROLE}`,
+        `ROUND((LENGTH(p.${ProjectTable.DATA})- LENGTH(REPLACE(p.${ProjectTable.DATA}, '"id"', "") ))/LENGTH('"id"')) AS testCaseCount`,
+        `COUNT(pu.${projectUsersTable.ID}) as totalUser`,
+        `u.${UserTable.FIRSTNAME}`
         ],
         `p.${ProjectTable.IS_DELETE} = 0 AND p.${ProjectTable.IS_ENABLE} = 1 AND  pu.${projectUsersTable.USERID} = ? GROUP BY p.${ProjectTable.ID},pu.${projectUsersTable.ROLE} ORDER BY p.${ProjectTable.CREATED_AT} DESC`,
         [id]);
@@ -84,12 +88,16 @@ export class ProjectUtils {
   public async getProjectsByOrg(id) {
     try {
       const result =  await mysql.findAll(`${Tables.PROJECT} p
-      LEFT JOIN ${Tables.PROJECTUSERS} pu on p.${ProjectTable.ID} = pu.${projectUsersTable.PROJECTID}`,[
+      LEFT JOIN ${Tables.PROJECTUSERS} pu on p.${ProjectTable.ID} = pu.${projectUsersTable.PROJECTID}
+      LEFT JOIN ${Tables.USER} u on u.${UserTable.ID} = pu.${projectUsersTable.USERID}`,[
       `p.${ProjectTable.ID}`,
       `p.${ProjectTable.NAME}`,
       `p.${ProjectTable.TYPE}`,
       `p.${ProjectTable.DESC}`,
       `p.${ProjectTable.CREATED_AT}`,
+      `u.${UserTable.FIRSTNAME}`,
+      `ROUND((LENGTH(p.${ProjectTable.DATA})- LENGTH(REPLACE(p.${ProjectTable.DATA}, '"id"', "") ))/LENGTH('"id"')) AS testCaseCount`,
+      `COUNT(pu.${projectUsersTable.ID}) as totalUser`,
       `MAX(pu.${projectUsersTable.ROLE}) as role`,
       ],
       `p.${ProjectTable.IS_DELETE} = 0 AND p.${ProjectTable.IS_ENABLE} = 1 AND  pu.${projectUsersTable.ORGID} = ? GROUP BY p.${ProjectTable.ID} ORDER BY p.${ProjectTable.CREATED_AT} DESC`,
