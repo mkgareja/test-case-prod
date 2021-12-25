@@ -1,7 +1,7 @@
 import * as mysql from 'jm-ez-mysql';
 import { ResponseBuilder } from '../../helpers/responseBuilder';
 import { SendEmail } from '../../helpers/sendEmail';
-import { Tables, UserTable,OrgEmailsTable,StaticContentTable,ProjectTable,TestrunsTable, projectUsersTable,OrganizationUsersTable, OrganizationTable } from '../../config/tables';
+import { Tables, UserTable,OrgEmailsTable,TestMergeTable,ProjectTable,TestrunsTable, projectUsersTable,OrganizationUsersTable, OrganizationTable } from '../../config/tables';
 
 export class ProjectUtils {
    // Get User devices
@@ -75,6 +75,7 @@ export class ProjectUtils {
         `pu.${projectUsersTable.ROLE}`,
         `ROUND((LENGTH(p.${ProjectTable.DATA})- LENGTH(REPLACE(p.${ProjectTable.DATA}, '"id"', "") ))/LENGTH('"id"')) AS testCaseCount`,
         `COUNT(pu.${projectUsersTable.ID}) as totalUser`,
+        `(SELECT count(*) FROM ${Tables.MERGE} m where m.${TestMergeTable.DESTINATION_PID} = p.${ProjectTable.ID} AND ${TestMergeTable.STATUS}=0) as totalPendingRequest`,
         `u.${UserTable.FIRSTNAME}`
         ],
         `p.${ProjectTable.IS_DELETE} = 0 AND p.${ProjectTable.IS_ENABLE} = 1 AND  pu.${projectUsersTable.USERID} = ? GROUP BY p.${ProjectTable.ID},pu.${projectUsersTable.ROLE} ORDER BY p.${ProjectTable.CREATED_AT} DESC`,
@@ -96,6 +97,7 @@ export class ProjectUtils {
       `p.${ProjectTable.DESC}`,
       `p.${ProjectTable.CREATED_AT}`,
       `u.${UserTable.FIRSTNAME}`,
+      `(SELECT count(*) FROM ${Tables.MERGE} m where m.${TestMergeTable.DESTINATION_PID} = p.${ProjectTable.ID} AND ${TestMergeTable.STATUS}=0) as totalPendingRequest`,
       `ROUND((LENGTH(p.${ProjectTable.DATA})- LENGTH(REPLACE(p.${ProjectTable.DATA}, '"id"', "") ))/LENGTH('"id"')) AS testCaseCount`,
       `COUNT(pu.${projectUsersTable.ID}) as totalUser`,
       `MAX(pu.${projectUsersTable.ROLE}) as role`,
