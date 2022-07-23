@@ -6,25 +6,17 @@ export class TaskUtils {
    // Get User devices
    
   public async addTask(Details: Json): Promise<ResponseBuilder> {
-    const tasks = await mysql.findAll(Tables.TASKS, [TaskTable.ID], `${TaskTable.ID} = ?`, [Details.id]);
-    let res;
-    if (tasks.length == 0) {
-      res = await mysql.insert(Tables.TASKS, Details);
-    } else {
-      return await this.updateTask(Details.id, Details);
-    }
-    res.taskId = Details.id;
-    return ResponseBuilder.data({ res:res, status: true });
+    const res = await mysql.insert(Tables.TASKS, Details);
+    return ResponseBuilder.data({ res:res, status : true });
   }
 
   public async addSubTask(Details: Json): Promise<ResponseBuilder> {
     const res = await mysql.insert(Tables.SUBTASKS, Details);
-    return ResponseBuilder.data({ res:res });
+    return ResponseBuilder.data({ res:res, status: true });
   }
 
   public async updateTask(id,Info): Promise<ResponseBuilder> {
     const  result = await mysql.updateFirst(Tables.TASKS, Info, `${TaskTable.ID} = ?`, [id]);
-    result.taskId = id;
     if (result.affectedRows > 0) {  
       return ResponseBuilder.data({ status: true, res: result });
     } else {

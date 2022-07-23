@@ -29,6 +29,26 @@ export class TaskModel extends Model {
   }
 }
 
+export class SubTaskModel extends Model {
+
+  @IsNotEmpty()
+  public title: string;
+
+  @IsNotEmpty()
+  public projectid: string;
+
+  @IsNotEmpty()
+  public taskid: string;
+
+  constructor(body: any) {
+    super();
+    const { title, projectid, taskid } = body;
+    this.title=title;
+    this.projectid=projectid;
+    this.taskid=taskid;
+  }
+}
+
 export class TaskStatusModel extends Model {
 
   @IsNotEmpty()

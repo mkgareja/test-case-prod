@@ -105,39 +105,25 @@ export class ProjectUtils {
    
   }
 
-  private async groupByTaskID(result: any) {
-    const hash = result.reduce((p,c) => (p[c.taskId] ? p[c.taskId].push(c) : p[c.taskId] = [c],p), {});
-    const newData = Object.keys(hash).map(k => ({model: hash[k][0].name, id: hash[k][0].taskId, lists: hash[k]}));
-    return newData;
-  }
-
   private async getTaskResponse(result: any) {
     result.forEach((x: { field: string; }) => {
       x.field = JSON.parse(x.field);
     });
-    const taskGroupedBy = await this.groupByTaskID(result);
-    let status = true;
-    if (taskGroupedBy.length == 0) {
-      status = false;
-    }
-    const res = {
-      status: status,
-      field: [],
-      data: taskGroupedBy
-    };
-    return res;
+    const hash = result.reduce((p,c) => (p[c.taskId] ? p[c.taskId].push(c) : p[c.taskId] = [c],p), {});
+    const taskGroupedBy = Object.keys(hash).map(k => ({model: hash[k][0].name, id: hash[k][0].taskId, lists: hash[k]}));
+    return { status: true, data: taskGroupedBy };
   }
 
   public async getTask(id: any) {
     const result = await mysql.findAll(
       `${Tables.PROJECT} p INNER JOIN ${Tables.TASKS} t on t.${TaskTable.PID}=p.${ProjectTable.ID}
-      INNER JOIN ${Tables.SUBTASKS} as st on t.${TaskTable.ID}=st.${SubTaskTable.TID}`,
+      LEFT JOIN ${Tables.SUBTASKS} as st on t.${TaskTable.ID}=st.${SubTaskTable.TID}`,
       [
-        `IFNULL(st.${SubTaskTable.FIELD}, p.${ProjectTable.FIELD}) as field, t.${TaskTable.NAME}, t.${TaskTable.ID} as taskId,
+        `IFNULL(st.${SubTaskTable.FIELD}, p.${ProjectTable.FIELD}) as field, t.${TaskTable.TITLE}, t.${TaskTable.ID} as taskId,
         st.${SubTaskTable.ID} as subtaskId, st.${SubTaskTable.SUB_ID}, st.${SubTaskTable.OS}, st.${SubTaskTable.TITLE}, st.${SubTaskTable.BROWSER}, 
-        st.${SubTaskTable.EXP_RES}, st.${SubTaskTable.TESTING}, st.${SubTaskTable.USERNAME}, st.${SubTaskTable.DESC}`
+        st.${SubTaskTable.SUMMARY}, st.${SubTaskTable.TESTING}, st.${SubTaskTable.USERNAME}, st.${SubTaskTable.DESC}`
       ],
-        `t.${SubTaskTable.IS_DELETE} = 0 AND t.${SubTaskTable.IS_ENABLE} = 1 and t.${TestrunsTable.PROJECTID} = ? ORDER BY t.${SubTaskTable.CREATED_AT} DESC`, [id]
+        `t.${SubTaskTable.IS_DELETE} = 0 AND t.${SubTaskTable.IS_ENABLE} = 1 and t.${TaskTable.PID} = ? ORDER BY t.${SubTaskTable.CREATED_AT} DESC`, [id]
     );
     const taskResponse = await this.getTaskResponse(result);
     return taskResponse;

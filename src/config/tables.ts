@@ -419,7 +419,6 @@ export enum TaskTable {
   PID = 'projectid',
   DESC = 'description',
   MODEL_ID = 'modelId',
-  NAME = 'name',
   UPDATED_AT = 'updated_at',
 }
 
@@ -454,7 +453,7 @@ export enum SubTaskTable {
   OS = 'os',
   TITLE = 'title',
   BROWSER = 'browser',
-  EXP_RES = 'exp_res',
+  SUMMARY = 'summary',
   TESTING = 'testing',
   USERNAME = 'username',
   IS_ENABLE = 'isEnable',
