@@ -1,7 +1,7 @@
 import * as mysql from 'jm-ez-mysql';
 import { ResponseBuilder } from '../../helpers/responseBuilder';
 import { SendEmail } from '../../helpers/sendEmail';
-import { Tables, UserTable,OrgEmailsTable,StaticContentTable,ProjectTable,TestrunsTable, projectUsersTable,OrganizationUsersTable, OrganizationTable } from '../../config/tables';
+import { Tables, UserTable,OrgEmailsTable,StaticContentTable,ProjectTable,TestrunsTable, projectUsersTable,OrganizationUsersTable, OrganizationTable, TaskTable, SubTaskTable } from '../../config/tables';
 
 export class ProjectUtils {
    // Get User devices
@@ -104,15 +104,45 @@ export class ProjectUtils {
     }
    
   }
-  public async getTask(id) {
-    const result = await mysql.findAll(Tables.PROJECT,
-      [ProjectTable.DATA,ProjectTable.FIELD], `${ProjectTable.IS_DELETE} = 0 AND ${ProjectTable.IS_ENABLE} = 1 and ${ProjectTable.ID} = ?`, [id]);
-      if (result.length >= 0) {
-        return result;
-      } else {
-        return false;
-      }
+
+  private async groupByTaskID(result: any) {
+    const hash = result.reduce((p,c) => (p[c.taskId] ? p[c.taskId].push(c) : p[c.taskId] = [c],p), {});
+    const newData = Object.keys(hash).map(k => ({model: hash[k][0].name, id: hash[k][0].taskId, lists: hash[k]}));
+    return newData;
   }
+
+  private async getTaskResponse(result: any) {
+    result.forEach((x: { field: string; }) => {
+      x.field = JSON.parse(x.field);
+    });
+    const taskGroupedBy = await this.groupByTaskID(result);
+    let status = true;
+    if (taskGroupedBy.length == 0) {
+      status = false;
+    }
+    const res = {
+      status: status,
+      field: [],
+      data: taskGroupedBy
+    };
+    return res;
+  }
+
+  public async getTask(id: any) {
+    const result = await mysql.findAll(
+      `${Tables.PROJECT} p INNER JOIN ${Tables.TASKS} t on t.${TaskTable.PID}=p.${ProjectTable.ID}
+      INNER JOIN ${Tables.SUBTASKS} as st on t.${TaskTable.ID}=st.${SubTaskTable.TID}`,
+      [
+        `IFNULL(st.${SubTaskTable.FIELD}, p.${ProjectTable.FIELD}) as field, t.${TaskTable.NAME}, t.${TaskTable.ID} as taskId,
+        st.${SubTaskTable.ID} as subtaskId, st.${SubTaskTable.SUB_ID}, st.${SubTaskTable.OS}, st.${SubTaskTable.TITLE}, st.${SubTaskTable.BROWSER}, 
+        st.${SubTaskTable.EXP_RES}, st.${SubTaskTable.TESTING}, st.${SubTaskTable.USERNAME}, st.${SubTaskTable.DESC}`
+      ],
+        `t.${SubTaskTable.IS_DELETE} = 0 AND t.${SubTaskTable.IS_ENABLE} = 1 and t.${TestrunsTable.PROJECTID} = ? ORDER BY t.${SubTaskTable.CREATED_AT} DESC`, [id]
+    );
+    const taskResponse = await this.getTaskResponse(result);
+    return taskResponse;
+  }
+
   public async getAllEmail(id) {
     const result = await mysql.findAll(Tables.ORGEMAIL,
       [OrgEmailsTable.ID,OrgEmailsTable.EMAIL], `${OrgEmailsTable.IS_DELETE} = 0 AND ${OrgEmailsTable.IS_ENABLE} = 1 and ${OrgEmailsTable.ORGID} = ?`, [id]);

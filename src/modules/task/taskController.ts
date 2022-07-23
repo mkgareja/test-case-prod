@@ -110,11 +110,12 @@ export class TaskController {
             isDelete: req.body.isDelete
         }
         const result:ResponseBuilder = await this.taskUtils.updateTask(id,projectObj);
-        if (result.result.status == true) {
-            result.msg = req.t('TASK_ADDED');
+        const result2:ResponseBuilder = await this.taskUtils.bulkUpdateSubtasks(id,projectObj);
+        if (result.result.status == true && result2.result.status == true) {
+            result.msg = req.t('TASK_SUBTASK_DELETED');
             res.status(Constants.SUCCESS_CODE).json(result);
         } else {
-            res.status(Constants.NOT_FOUND_CODE).json(result);
+            res.status(Constants.NOT_FOUND_CODE).json(result.result.status == true ? result2 : result);
         }
     }
     public deleteSubTask = async (req: any, res: Response) => {
@@ -124,7 +125,7 @@ export class TaskController {
         }
         const result:ResponseBuilder = await this.taskUtils.updateSubTask(id,projectObj);
         if (result.result.status == true) {
-            result.msg = req.t('TASK_ADDED');
+            result.msg = req.t('SUBTASK_DELETED');
             res.status(Constants.SUCCESS_CODE).json(result);
         } else {
             res.status(Constants.NOT_FOUND_CODE).json(result);

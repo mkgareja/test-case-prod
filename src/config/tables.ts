@@ -411,13 +411,18 @@ export enum TestrunsTable {
 export enum TaskTable {
   ID = 'id',
   TITLE = 'title',
+  STATUS = 'status',
   IS_ENABLE = 'isEnable',
   IS_DELETE = 'isDelete',
-  CREATED_AT='createdAt',
+  CREATED_AT = 'createdAt',
   CREATED_BY ='createdBy',
   PID = 'projectid',
-  DESC = 'description'
+  DESC = 'description',
+  MODEL_ID = 'modelId',
+  NAME = 'name',
+  UPDATED_AT = 'updated_at',
 }
+
 export enum OrganizationTable {
   ID = 'id',
   NAME = 'name',
@@ -445,14 +450,21 @@ export enum OrgEmailsTable {
 }
 export enum SubTaskTable {
   ID = 'id',
+  SUB_ID = 'subid',
+  OS = 'os',
   TITLE = 'title',
+  BROWSER = 'browser',
+  EXP_RES = 'exp_res',
+  TESTING = 'testing',
+  USERNAME = 'username',
   IS_ENABLE = 'isEnable',
   IS_DELETE = 'isDelete',
   CREATED_AT='createdAt',
   CREATED_BY ='createdBy',
   PID = 'projectid',
   TID = 'taskid',
-  DESC = 'description'
+  DESC = 'description',
+  FIELD = 'field'
 }
 // modules table's fields
 export enum ModuleTable {

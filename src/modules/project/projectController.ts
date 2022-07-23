@@ -1,6 +1,8 @@
 import { Constants } from '../../config/constants';
 import { Request, Response } from 'express';
 import { ProjectUtils } from './projectUtils';
+import { TaskUtils } from './../task/taskUtils';
+import { SubTaskUtils } from '../subtask/subTaskUtils';
 import { v4 as uuidv4 } from 'uuid';
 import { AuthUtils } from '../auth/authUtils';
 import { ResponseBuilder } from '../../helpers/responseBuilder';
@@ -10,6 +12,8 @@ const getPropValues = (o, prop) => (res => (JSON.stringify(o, (key, value) => (k
 export class ProjectController {
     private authUtils: AuthUtils = new AuthUtils();
     private projectUtils: ProjectUtils = new ProjectUtils();
+    private taskUtils: TaskUtils = new TaskUtils();
+    private subTaskUtils: SubTaskUtils = new SubTaskUtils();
     public getProject = async (req: any, res: Response) => {
         let result;
         if (req._user.role == 1 || req._user.role == 2) {
@@ -17,7 +21,6 @@ export class ProjectController {
         }else{
             result = await this.projectUtils.getProjects(req._user.id);
         }
-        
         if(result){
             res.status(Constants.SUCCESS_CODE).json({ status: true, data: result });
         }else{
@@ -34,12 +37,13 @@ export class ProjectController {
     }
     public getTask = async (req: any, res: Response) => {
         const { id = null } = req.params;
-        let result = await this.projectUtils.getTask(id);
-        if(result[0].data){
-            res.status(Constants.SUCCESS_CODE).json({ status: true,field:JSON.parse(result[0].field), data: JSON.parse(result[0].data) });
-        }else{
-            res.status(Constants.NOT_FOUND_CODE).json({ status: false,error: req.t('NO_DATA') });
-        }
+        try {
+            let result = await this.projectUtils.getTask(id);
+            res.status(Constants.SUCCESS_CODE).json(result);
+        } catch (err) {
+            console.log(`Error at getting task, error: ${err}`);
+            res.status(Constants.NOT_FOUND_CODE).json({ status: false, error: req.t('NO_DATA') });
+        };
     };
     public addProject = async (req: any, res: Response) => {
         const uuid = uuidv4();
@@ -219,19 +223,65 @@ export class ProjectController {
             res.status(Constants.NOT_FOUND_CODE).json(result);
         }
     }
+
     public updateTask = async (req: any, res: Response) => {
         const { id = null } = req.params;
-        const projectObj = {
-            data:JSON.stringify(req.body.data)
-        }
-        const result:ResponseBuilder = await this.projectUtils.updateProject(id,projectObj);
-        if (result.result.status == true) {
-            result.msg = req.t('TASK_ADDED');
+        const task = req.body.data[0];
+        try {
+            const result = await this.insertTaskAndSubTask(task, id);
             res.status(Constants.SUCCESS_CODE).json(result);
-        } else {
-            res.status(Constants.NOT_FOUND_CODE).json(result);
+        } catch(err) {
+            console.log(`Error at getting task, error: ${err}`);
+            res.status(Constants.INTERNAL_SERVER_ERROR_CODE).json({ status: false, error: req.t('ERR_INTERNAL_SERVER') });
         }
     }
+
+    private insertTaskAndSubTask = async (task: any, projectid: any) => {
+        const taskId = task.taskId || uuidv4();
+        console.log("Task model: ", task.model);
+        const taskObject =  {
+            id : taskId,
+            name: task.model,
+            projectid: projectid,
+            status: 1,
+        }
+        const taskResult = await this.taskUtils.addTask(taskObject);
+        console.log("task: ", task);
+        console.log("taskResult: ", taskResult);
+        let subTaskResult;
+        if (task.hasOwnProperty('lists') && taskResult.result.status == true) {
+            for (const subtask of task.lists) {
+                subTaskResult = await this.insertSubTask(subtask, taskId, projectid);
+            }
+        }
+        const res = {
+            code: Constants.SUCCESS_CODE,
+            taskResult: taskResult.result.res,
+            subTaskResult: subTaskResult ? subTaskResult.result.res : null
+        };
+        return res;
+    };
+
+    private insertSubTask = async (subtask: any, taskId: any, projectid: any) => {
+        const subTaskId = subtask.subTaskId || uuidv4();
+        const subTaskObject = {
+            id: subTaskId,
+            projectid: projectid,
+            taskid: taskId,
+            status: 1,
+            title: subtask.name,
+            subid: subtask.id,
+            testing: subtask.testing,
+            browser: subtask.browser,
+            os: subtask.os,
+            exp_res: subtask.summary,
+            description: subtask.description,
+            username: subtask.username,
+            field: JSON.stringify(subtask.field)
+        }
+        return await this.subTaskUtils.addSubTask(subTaskObject);
+    };
+
     public updateField = async (req: any, res: Response) => {
         const { id = null } = req.params;
         const projectObj = {
