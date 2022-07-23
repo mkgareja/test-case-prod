@@ -1,7 +1,6 @@
 import { Constants } from '../../config/constants';
 import { Request, Response } from 'express';
 import { ProjectUtils } from './projectUtils';
-import { TaskUtils } from './../task/taskUtils';
 import { v4 as uuidv4 } from 'uuid';
 import { AuthUtils } from '../auth/authUtils';
 import { ResponseBuilder } from '../../helpers/responseBuilder';
@@ -11,7 +10,6 @@ const getPropValues = (o, prop) => (res => (JSON.stringify(o, (key, value) => (k
 export class ProjectController {
     private authUtils: AuthUtils = new AuthUtils();
     private projectUtils: ProjectUtils = new ProjectUtils();
-    private taskUtils: TaskUtils = new TaskUtils();
     public getProject = async (req: any, res: Response) => {
         let result;
         if (req._user.role == 1 || req._user.role == 2) {
