@@ -230,6 +230,7 @@ export class ProjectController {
         const result:ResponseBuilder = await this.projectUtils.updateProject(id,projectObj);
         if (result.result.status == true) {
             result.msg = req.t('TASK_ADDED');
+            res.status(Constants.SUCCESS_CODE).json(result);
         } else {
             res.status(Constants.NOT_FOUND_CODE).json(result);
         }
