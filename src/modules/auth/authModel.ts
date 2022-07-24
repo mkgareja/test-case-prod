@@ -97,7 +97,6 @@ export class AuthModel extends Model {
   @IsNotEmpty()
   public email: string;
 
-  @IsNotEmpty()
   public password: string;
 
   constructor(body: any) {

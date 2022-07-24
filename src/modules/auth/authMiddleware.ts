@@ -15,9 +15,10 @@ export class AuthMiddleware {
   public checkCredentials = async (req: any, res: Response, next: () => void) => {
     // get user detail by email address
     const user = await this.authUtils.checkUserEmailExists(req.body.email);
-
-    // check credentials matches or not
-    if (user && (await bcryptjs.compare(req.body.password, user.password))) {
+    if(user && req.body.socialLogin==1){
+      req.body._authentication = user;
+      next();
+    }else if (user && (await bcryptjs.compare(req.body.password, user.password))) {
       if (user.isEnable) {
         if (req.body.domain == 'www' || req.body.domain == 'oyetest'|| req.body.domain == 'localhost' || req.body.domain.toUpperCase() == user.domain.toUpperCase()) {
           req.body._authentication = user;
