@@ -7,17 +7,18 @@ export class TaskUtils {
    
   public async addTask(Details: Json): Promise<ResponseBuilder> {
     const res = await mysql.insert(Tables.TASKS, Details);
-    return ResponseBuilder.data({ res:res });
+    return ResponseBuilder.data({ res:res, status : true });
   }
+
   public async addSubTask(Details: Json): Promise<ResponseBuilder> {
     const res = await mysql.insert(Tables.SUBTASKS, Details);
-    return ResponseBuilder.data({ res:res });
+    return ResponseBuilder.data({ res:res, status: true });
   }
 
   public async updateTask(id,Info): Promise<ResponseBuilder> {
     const  result = await mysql.updateFirst(Tables.TASKS, Info, `${TaskTable.ID} = ?`, [id]);
     if (result.affectedRows > 0) {  
-      return ResponseBuilder.data({ status: true, data: result });
+      return ResponseBuilder.data({ status: true, res: result });
     } else {
       return ResponseBuilder.data({ status: false });
     }
@@ -30,6 +31,16 @@ export class TaskUtils {
       return ResponseBuilder.data({ status: false });
     }
   }
+
+  public async bulkUpdateSubtasks(id, Info): Promise<ResponseBuilder> {
+    const result = await mysql.update(Tables.SUBTASKS, Info, `${SubTaskTable.TID} = ?`, [id]);
+    if (result.affectedRows > 0) {
+      return ResponseBuilder.data({ status: true, data: result });
+    } else {
+      return ResponseBuilder.data({ status: false });
+    }
+  }
+
   public async getTasks(id) {
     const result = await mysql.findAll(Tables.TASKS,
       [TaskTable.ID,

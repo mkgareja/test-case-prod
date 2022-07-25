@@ -20,64 +20,82 @@ export class TaskController {
             res.status(Constants.NOT_FOUND_CODE).json({ status: false,error: req.t('NO_DATA') });
         }
     };
+
     public addTask = async (req: any, res: Response) => {
         const uuid = uuidv4();
         const infoObj = {
             id:uuid,
             projectid: req.body.projectid,
-            status: req.body.status,
             title:req.body.title
         }
-        // creating user profile
         const result:any = await this.taskUtils.addTask(infoObj);
-        const msg = req.t('TASK_ADDED');
-        res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg, data: result.result.res });
+        if (result.result.status == true) {
+            const msg = req.t('TASK_ADDED');
+            res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg, data: result.result.res, taskId: uuid });
+        } else {
+            res.status(Constants.NOT_FOUND_CODE).json(result);
+        }
     };
+
+    private async getSubTaskObj(uuid: any, body: any) {
+        let infoObj = {
+            id:uuid,
+            projectid: body.projectid,
+            taskid: body.taskid,
+            title: body.title,
+            field: JSON.stringify(body.details.field),
+            subid: body.details.subid,
+            description: body.details.description,
+            summary: body.details.summary,
+            browser: body.details.browser,
+            os: body.details.os,
+            testing: body.details.testing,
+            username: body.details.username
+        };
+        return infoObj;
+    }
+
     public addSubTask = async (req: any, res: Response) => {
         const uuid = uuidv4();
-        const infoObj = {
-            id:uuid,
-            projectid: req.body.projectid,
-            taskid: req.body.taskid,
-            status: req.body.status,
-            title:req.body.title
-        }
-        // creating user profile
+        const infoObj = await this.getSubTaskObj(uuid, req.body);
         const result:any = await this.taskUtils.addSubTask(infoObj);
-        const msg = req.t('SUBTASK_ADDED');
-        res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg, data: result.result.res });
+        if (result.result.status == true) {
+            const msg = req.t('SUBTASK_ADDED');
+            res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg, data: result.result.res, subTaskId: uuid });
+        } else {
+            res.status(Constants.NOT_FOUND_CODE).json(result);
+        }
     };
+
     public updateTask = async (req: any, res: Response) => {
         const { id = null } = req.params;
         const projectObj = {
             projectid: req.body.projectid,
-            status: req.body.status,
             title:req.body.title
         }
         const result:ResponseBuilder = await this.taskUtils.updateTask(id,projectObj);
         if (result.result.status == true) {
-            result.msg = req.t('TASK_ADDED');
-            res.status(Constants.SUCCESS_CODE).json(result);
+            const msg = req.t('TASK_UPDATED');
+            res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg, data: result.result.res, taskId: id});
         } else {
-            res.status(Constants.NOT_FOUND_CODE).json(result);
+            const msg = req.t('TASK_NOT_FOUND');
+            res.status(Constants.NOT_FOUND_CODE).json({ code: Constants.NOT_FOUND_CODE, msg: msg, data: result.result });
         }
     }
+
     public updateSubTask = async (req: any, res: Response) => {
         const { id = null } = req.params;
-        const projectObj = {
-            projectid: req.body.projectid,
-            taskid: req.body.taskid,
-            status: req.body.status,
-            title: req.body.title
-        }
-        const result:ResponseBuilder = await this.taskUtils.updateSubTask(id,projectObj);
+        const infoObj = await this.getSubTaskObj(id, req.body);
+        const result:ResponseBuilder = await this.taskUtils.updateSubTask(id, infoObj);
         if (result.result.status == true) {
-            result.msg = req.t('TASK_ADDED');
-            res.status(Constants.SUCCESS_CODE).json(result);
+            const msg = req.t('SUBTASK_UPDATED');
+            res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg, data: result.result.res, subTaskId: id });
         } else {
-            res.status(Constants.NOT_FOUND_CODE).json(result);
+            const msg = req.t('SUBTASK_NOT_FOUND');
+            res.status(Constants.NOT_FOUND_CODE).json({ code: Constants.NOT_FOUND_CODE, msg: msg, data: result.result });
         }
     }
+    
     public updateTaskStatus = async (req: any, res: Response) => {
         const { id = null } = req.params;
         const projectObj = {
@@ -110,11 +128,12 @@ export class TaskController {
             isDelete: req.body.isDelete
         }
         const result:ResponseBuilder = await this.taskUtils.updateTask(id,projectObj);
-        if (result.result.status == true) {
-            result.msg = req.t('TASK_ADDED');
+        const result2:ResponseBuilder = await this.taskUtils.bulkUpdateSubtasks(id,projectObj);
+        if (result.result.status == true && result2.result.status == true) {
+            result.msg = req.t('TASK_SUBTASK_DELETED');
             res.status(Constants.SUCCESS_CODE).json(result);
         } else {
-            res.status(Constants.NOT_FOUND_CODE).json(result);
+            res.status(Constants.NOT_FOUND_CODE).json(result.result.status == true ? result2 : result);
         }
     }
     public deleteSubTask = async (req: any, res: Response) => {
@@ -124,7 +143,7 @@ export class TaskController {
         }
         const result:ResponseBuilder = await this.taskUtils.updateSubTask(id,projectObj);
         if (result.result.status == true) {
-            result.msg = req.t('TASK_ADDED');
+            result.msg = req.t('SUBTASK_DELETED');
             res.status(Constants.SUCCESS_CODE).json(result);
         } else {
             res.status(Constants.NOT_FOUND_CODE).json(result);

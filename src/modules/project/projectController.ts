@@ -17,7 +17,6 @@ export class ProjectController {
         }else{
             result = await this.projectUtils.getProjects(req._user.id);
         }
-        
         if(result){
             res.status(Constants.SUCCESS_CODE).json({ status: true, data: result });
         }else{
@@ -34,12 +33,13 @@ export class ProjectController {
     }
     public getTask = async (req: any, res: Response) => {
         const { id = null } = req.params;
-        let result = await this.projectUtils.getTask(id);
-        if(result[0].data){
-            res.status(Constants.SUCCESS_CODE).json({ status: true,field:JSON.parse(result[0].field), data: JSON.parse(result[0].data) });
-        }else{
-            res.status(Constants.NOT_FOUND_CODE).json({ status: false,error: req.t('NO_DATA') });
-        }
+        try {
+            let result = await this.projectUtils.getTask(id);
+            res.status(Constants.SUCCESS_CODE).json(result);
+        } catch (err) {
+            console.log(`Error at getting task, error: ${err}`);
+            res.status(Constants.NOT_FOUND_CODE).json({ status: false, error: req.t('NO_DATA') });
+        };
     };
     public addProject = async (req: any, res: Response) => {
         const uuid = uuidv4();
@@ -219,6 +219,7 @@ export class ProjectController {
             res.status(Constants.NOT_FOUND_CODE).json(result);
         }
     }
+
     public updateTask = async (req: any, res: Response) => {
         const { id = null } = req.params;
         const projectObj = {
@@ -232,6 +233,7 @@ export class ProjectController {
             res.status(Constants.NOT_FOUND_CODE).json(result);
         }
     }
+
     public updateField = async (req: any, res: Response) => {
         const { id = null } = req.params;
         const projectObj = {
