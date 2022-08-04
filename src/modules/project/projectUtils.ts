@@ -120,7 +120,7 @@ export class ProjectUtils {
       x.field = JSON.parse(x.field);
     });
     const hash = result.reduce((p,c) => (p[c.taskId] ? p[c.taskId].push(c) : p[c.taskId] = [c],p), {});
-    const taskGroupedBy = Object.keys(hash).map(k => ({model: hash[k][0].name, id: hash[k][0].taskId, lists: hash[k]}));
+    const taskGroupedBy = Object.keys(hash).map(k => ({ taskTitle: hash[k][0].taskTitle, id: hash[k][0].taskId, lists: hash[k] }));
     return { status: true, data: taskGroupedBy };
   }
 
@@ -129,8 +129,8 @@ export class ProjectUtils {
       `${Tables.PROJECT} p INNER JOIN ${Tables.TASKS} t on t.${TaskTable.PID}=p.${ProjectTable.ID}
       LEFT JOIN ${Tables.SUBTASKS} as st on t.${TaskTable.ID}=st.${SubTaskTable.TID}`,
       [
-        `IFNULL(st.${SubTaskTable.FIELD}, p.${ProjectTable.FIELD}) as field, t.${TaskTable.TITLE}, t.${TaskTable.ID} as taskId,
-        st.${SubTaskTable.ID} as subtaskId, st.${SubTaskTable.SUB_ID}, st.${SubTaskTable.OS}, st.${SubTaskTable.TITLE}, st.${SubTaskTable.BROWSER}, 
+        `IFNULL(st.${SubTaskTable.FIELD}, p.${ProjectTable.FIELD}) as field, t.${TaskTable.TITLE} as taskTitle, t.${TaskTable.ID} as taskId,
+        st.${SubTaskTable.ID} as subtaskId, st.${SubTaskTable.SUB_ID}, st.${SubTaskTable.OS}, st.${SubTaskTable.TITLE} as subTaskTitle, st.${SubTaskTable.BROWSER}, 
         st.${SubTaskTable.SUMMARY}, st.${SubTaskTable.TESTING}, st.${SubTaskTable.USERNAME}, st.${SubTaskTable.DESC}`
       ],
         `t.${SubTaskTable.IS_DELETE} = 0 AND t.${SubTaskTable.IS_ENABLE} = 1 and t.${TaskTable.PID} = ? ORDER BY t.${SubTaskTable.CREATED_AT} DESC`, [id]
