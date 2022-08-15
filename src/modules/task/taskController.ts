@@ -3,9 +3,11 @@ import { Request, Response } from 'express';
 import { TaskUtils } from './taskUtils';
 import { v4 as uuidv4 } from 'uuid';
 import { ResponseBuilder } from '../../helpers/responseBuilder';
+import { ResultUtils } from '../result/resultUtils';
 
 export class TaskController {
     private taskUtils: TaskUtils = new TaskUtils();
+    private resultUtils: ResultUtils = new ResultUtils();
     public getTask = async (req: any, res: Response) => {
         let TaskResult = await this.taskUtils.getTasks(req.params.id);
         let SubTaskResult = await this.taskUtils.getSubTasks(req.params.id);
@@ -65,6 +67,7 @@ export class TaskController {
         } else {
             res.status(Constants.NOT_FOUND_CODE).json(result);
         }
+        this.resultUtils.addSubtaskResult(infoObj, uuid);
     };
 
     public updateTask = async (req: any, res: Response) => {
@@ -129,7 +132,7 @@ export class TaskController {
         }
         const result:ResponseBuilder = await this.taskUtils.updateTask(id,projectObj);
         const result2:ResponseBuilder = await this.taskUtils.bulkUpdateSubtasks(id,projectObj);
-        if (result.result.status == true && result2.result.status == true) {
+        if (result.result.status == true) {
             result.msg = req.t('TASK_SUBTASK_DELETED');
             res.status(Constants.SUCCESS_CODE).json(result);
         } else {

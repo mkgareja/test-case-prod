@@ -5,11 +5,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { AuthUtils } from '../auth/authUtils';
 import { ResponseBuilder } from '../../helpers/responseBuilder';
 import * as CryptoJS from 'crypto-js';
+import { ResultUtils } from '../result/resultUtils';
 const getPropValues = (o, prop) => (res => (JSON.stringify(o, (key, value) => (key === prop && res.push(value), value)), res))([]);
 
 export class ProjectController {
     private authUtils: AuthUtils = new AuthUtils();
     private projectUtils: ProjectUtils = new ProjectUtils();
+    private resultUtils: ResultUtils = new ResultUtils();
     public getProject = async (req: any, res: Response) => {
         let result;
         if (req._user.role == 1 || req._user.role == 2) {
@@ -63,6 +65,7 @@ export class ProjectController {
         await this.projectUtils.addProjectUsers(projectObjnew);
         const msg = req.t('PROJECT_ADDED');
         res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg, data: result.result.newDevice });
+        this.resultUtils.addResult(uuid);
     };
     public addUserToProject = async (req: any, res: Response) => {
         const uuid2 = uuidv4();
@@ -353,6 +356,7 @@ export class ProjectController {
         } else {
             res.status(Constants.NOT_FOUND_CODE).json(result);
         }
+        this.resultUtils.addResultAndSubtaskResult(id);
     }
     public getTestRun = async (req: any, res: Response) => {
         const { id = null } = req.params;
@@ -375,27 +379,13 @@ export class ProjectController {
     };
     public getTestRunByProject = async (req: any, res: Response) => {
         const { id = null } = req.params;
-        let result = await this.projectUtils.getTestRunByProject(id);
-        let finalData ;
-        let finalField;
-        let resArray ;
-        let temp_count;
-        if(result){
-         finalData = JSON.parse(result.data);
-         finalField = JSON.parse(result.field);
-         resArray = getPropValues(finalData, "status");
-         temp_count = {
-            pass: resArray.filter(x => x == 'pass').length,
-            failed: resArray.filter(x => x == 'failed').length,
-            block: resArray.filter(x => x == 'block').length,
-            fail: resArray.filter(x => x == 'fail').length,
-            untested: resArray.filter(x => x == 'untested').length
-        }}
-        if(result && result.data){
-            res.status(Constants.SUCCESS_CODE).json({ name:result.name,id:result.id,status: true, count: temp_count, data: finalData, field: finalField });
-        }else{
-            res.status(Constants.NOT_FOUND_CODE).json({ status: false,error: req.t('NO_DATA') });
-        }
+        try {
+            let result = await this.projectUtils.getTestRunByProject(id);
+            res.status(Constants.SUCCESS_CODE).json(result);
+        } catch (err) {
+            console.log(`Error at getting testRun, error: ${err}`);
+            res.status(Constants.NOT_FOUND_CODE).json({ status: false, error: req.t('NO_DATA') });
+        };
     };
     public sendTestRunEmail = async (req: any, res: Response) => {
         const { id = null } = req.body;

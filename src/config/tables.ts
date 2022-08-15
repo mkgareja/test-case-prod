@@ -16,6 +16,8 @@ export class Tables {
   public static readonly TASKS = 'tasks';
   public static readonly TESTRUNS = 'testruns';
   public static readonly SUBTASKS = 'subtasks';
+  public static readonly RESULT = 'result';
+  public static readonly SUBTASKRESULTS = 'subtaskResults';
   public static readonly ORGANIZATION = 'organization';
   public static readonly ORGEMAIL = 'orgEmail';
   public static readonly ORGANIZATIONUSER = 'orgUsers';
@@ -465,6 +467,26 @@ export enum SubTaskTable {
   DESC = 'description',
   FIELD = 'field'
 }
+
+export enum ResultTable {
+  ID = 'id',
+  PID = 'project_id',
+  IS_ACTIVE = 'is_active',
+  IS_DELETE = 'is_delete',
+  CREATED_AT='created_at',
+  UPDATED_AT='updated_at'
+}
+
+export enum SubtaskResultsTable {
+  ID = 'id',
+  RESULT_ID = 'result_id',
+  PID = 'project_id',
+  TID = 'task_id',
+  STATUS = 'status',
+  CREATED_AT='created_at',
+  UPDATED_AT='updated_at'
+}
+
 // modules table's fields
 export enum ModuleTable {
   ID = 'id',
