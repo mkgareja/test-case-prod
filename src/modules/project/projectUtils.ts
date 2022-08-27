@@ -48,7 +48,7 @@ export class ProjectUtils {
     
   }
   public async updateTestRun(id,Info): Promise<ResponseBuilder> {
-    const  result = await mysql.updateFirst(Tables.TESTRUNS, Info, `${ProjectTable.ID} = ?`, [id]);
+    const  result = await mysql.updateFirst(Tables.TESTRUNS, Info, `${TestrunsTable.PROJECTID} = ?`, [id]);
     if (result.affectedRows > 0) {
       return ResponseBuilder.data({ status: true, data: result });
     } else {
@@ -192,7 +192,7 @@ export class ProjectUtils {
         `IFNULL(st.${SubTaskTable.FIELD}, p.${ProjectTable.FIELD}) as field, t.${TaskTable.TITLE} as taskTitle, t.${TaskTable.ID} as taskId,
         st.${SubTaskTable.ID} as subtaskId, st.${SubTaskTable.SUB_ID}, st.${SubTaskTable.OS}, st.${SubTaskTable.TITLE} as subTaskTitle, st.${SubTaskTable.BROWSER}, 
         st.${SubTaskTable.SUMMARY}, st.${SubTaskTable.TESTING}, st.${SubTaskTable.USERNAME}, st.${SubTaskTable.DESC}, 
-        sr.${SubtaskResultsTable.RESULT_ID}, sr.${SubtaskResultsTable.STATUS}`
+        sr.${SubtaskResultsTable.ID} as result_id, sr.${SubtaskResultsTable.STATUS}`
       ],
         `t.${SubTaskTable.IS_DELETE} = 0 AND t.${SubTaskTable.IS_ENABLE} = 1 and t.${TaskTable.PID} = ? ORDER BY t.${SubTaskTable.CREATED_AT} DESC`, [id]
     );
