@@ -266,9 +266,12 @@ export class ProjectController {
                 description: req.body.description,
                 isProcessing:1
             }
-            const result: any = await this.projectUtils.addTestRun(tempObj);
-            const msg = req.t('TEST_RUN_ADDED');
-            res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
+            if (result.result.status == true) {
+                const msg = req.t('TEST_RUN_ADDED');
+                res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
+            } else {
+                res.status(Constants.INTERNAL_SERVER_ERROR_CODE).json(result);
+            }
         }
     }
     public getObjects = async (obj, key, val, newVal) => {
