@@ -266,6 +266,7 @@ export class ProjectController {
                 description: req.body.description,
                 isProcessing:1
             }
+            const result: any = await this.projectUtils.addTestRun(tempObj);
             if (result.result.status == true) {
                 const msg = req.t('TEST_RUN_ADDED');
                 res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
