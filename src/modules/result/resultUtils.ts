@@ -61,7 +61,8 @@ export class ResultUtils {
                 id: uuidv4(),
                 result_id: resultId,
                 project_id: projectId,
-                task_id: r.taskid
+                task_id: r.taskid,
+                subtask_id: r.id
             })
         });
         const res = await mysql.insertMany(Tables.SUBTASKRESULTS, subTaskResultObj);
