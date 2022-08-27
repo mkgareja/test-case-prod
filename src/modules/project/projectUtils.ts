@@ -16,7 +16,7 @@ export class ProjectUtils {
   }
   public async addTestRun(tempObj: Json): Promise<ResponseBuilder> {
     const data = await mysql.insert(Tables.TESTRUNS, tempObj);
-    return ResponseBuilder.data({ data:data });
+    return ResponseBuilder.data({ status: true, data:data });
   }
   public async updateUserProject(uid,Info,pid): Promise<ResponseBuilder> {
     const  result = await mysql.updateFirst(Tables.PROJECTUSERS, Info, `${projectUsersTable.USERID} = ? and ${projectUsersTable.PROJECTID} = ?`, [uid,pid]);
