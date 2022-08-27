@@ -254,54 +254,21 @@ export class ProjectController {
         const uuid = uuidv4();
         const { id = null } = req.params;
         const tasks = await this.projectUtils.getTask(id);
-        if (!tasks[0].data) {
+        if (!tasks.data[0]) {
             res.status(Constants.SUCCESS_CODE).json({ code: 400, msg: 'No test cases found' });
         } else {
-            let filteredArray = await JSON.parse(tasks[0].data)
-            .filter((element) =>
-              element.lists.some((name) => name != ""))
-            .map(element => {
-              return Object.assign({}, element, { lists: element.lists.filter(subElement => subElement.name != "") });
-            }); 
-            filteredArray = filteredArray.filter((element) => element.lists.length>0)
-            if(filteredArray.length>0){
-                const tempObj = {
-                    id: uuid,
-                    name: req.body.name,
-                    userid: req._user.id,
-                    projectid: id,
-                    data: JSON.stringify(filteredArray),
-                    field: tasks[0].field,
-                    createdAt: new Date(),
-                    description: req.body.description,
-                    isProcessing:1
-                }
-                const resTempObj = {
-                    id: uuid,
-                    name: req.body.name,
-                    userid: req._user.id,
-                    projectid: id,
-                    data: filteredArray,
-                    field: JSON.parse(tasks[0].field),
-                    createdAt: new Date(),
-                    description: req.body.description,
-                    isProcessing:1
-                }
-                let resArray = getPropValues(resTempObj.data, "status");
-                let temp_count = {
-                    pass: resArray.filter(x => x == 'pass').length,
-                    failed: resArray.filter(x => x == 'failed').length,
-                    block: resArray.filter(x => x == 'block').length,
-                    fail: resArray.filter(x => x == 'fail').length
-                }
-                // creating user profile
-                const result: any = await this.projectUtils.addTestRun(tempObj);
-                const msg = req.t('TEST_RUN_ADDED');
-                res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg, count: temp_count, data: resTempObj });
-            }else{
-                res.status(Constants.SUCCESS_CODE).json({ code: 400, msg: 'No test cases found' });
+            const tempObj = {
+                id: uuid,
+                name: req.body.name,
+                userid: req._user.id,
+                projectid: id,
+                createdAt: new Date(),
+                description: req.body.description,
+                isProcessing:1
             }
-            
+            const result: any = await this.projectUtils.addTestRun(tempObj);
+            const msg = req.t('TEST_RUN_ADDED');
+            res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
         }
     }
     public getObjects = async (obj, key, val, newVal) => {
