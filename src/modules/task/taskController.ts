@@ -40,12 +40,12 @@ export class TaskController {
     };
 
     private async getSubTaskObj(uuid: any, body: any) {
-        let infoObj = {
+        const field = (body.details.field == undefined || body.details.field.length == 0) ? null : body.details.field;
+        let infoObj: any = {
             id:uuid,
             projectid: body.projectid,
             taskid: body.taskid,
             title: body.title,
-            field: JSON.stringify(body.details.field),
             subid: body.details.subid,
             description: body.details.description,
             summary: body.details.summary,
@@ -54,6 +54,9 @@ export class TaskController {
             testing: body.details.testing,
             username: body.details.username
         };
+        if (body.details.field != undefined && body.details.field.length != 0) {
+            infoObj.field = field;
+        }
         return infoObj;
     }
 
