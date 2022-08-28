@@ -4,15 +4,16 @@ import { Tables, ResultTable, SubtaskResultsTable, SubTaskTable }from '../../con
 import { v4 as uuidv4 } from 'uuid';
 
 export class ResultUtils {
-    public async addResult(projectId): Promise<ResponseBuilder> {
+    public async addResult(projectId) {
+        const resultId = uuidv4();
         const resultObj = {
-            id: uuidv4(),
+            id: resultId,
             project_id: projectId,
             is_active: 1
         }
-        const deleteResult = await this.deleteProjectResult(projectId);
-        const res = await mysql.insert(Tables.RESULT, resultObj);
-        return ResponseBuilder.data({ res:res, status : true });
+        await this.deleteProjectResult(projectId);
+        await mysql.insert(Tables.RESULT, resultObj);
+        return resultId;
     }
 
     public async deleteProjectResult(projectId: any): Promise<ResponseBuilder> {
@@ -21,25 +22,6 @@ export class ResultUtils {
         }
         const result = await mysql.update(Tables.RESULT, Info, `${ResultTable.PID} = ?`, [projectId]);
         return ResponseBuilder.data({ res:result, status : true });
-    }
-
-    public async addSubtaskResult(infoObj, uuid): Promise<ResponseBuilder> {
-        const resultId = await this.getResultId(infoObj.projectid);
-        const resultObj = {
-            id: uuidv4(),
-            result_id: resultId,
-            project_id: infoObj.projectid,
-            task_id: infoObj.taskid,
-            subtask_id: uuid
-        }
-        const res = await mysql.insert(Tables.SUBTASKRESULTS, resultObj);
-        return ResponseBuilder.data({ res:res, status : true });
-    }
-
-    private async getResultId(id: any) {
-        const result = await mysql.first(Tables.RESULT,
-            [ResultTable.ID], `${ResultTable.IS_DELETE} = 0 AND ${ResultTable.IS_ACTIVE} = 1 and ${ResultTable.PID} = ?`, [id]);
-        return result.id;
     }
 
     public async updateSubtaskResult(id, Info): Promise<ResponseBuilder> {
@@ -51,26 +33,21 @@ export class ResultUtils {
         }
     }
 
-    public async bulkAddSubtaskResult(projectId): Promise<ResponseBuilder> {
-        const resultId = await this.getResultId(projectId);
-        const result = await mysql.findAll(Tables.SUBTASKS,
-            [SubTaskTable.ID, SubTaskTable.TID], `${SubTaskTable.IS_DELETE} = 0 AND ${SubTaskTable.IS_ENABLE} = 1 and ${SubTaskTable.PID} = ?`, [projectId]);
-        const subTaskResultObj = [];
-        result.forEach(r => {
-            subTaskResultObj.push({
-                id: uuidv4(),
-                result_id: resultId,
-                project_id: projectId,
-                task_id: r.taskid,
-                subtask_id: r.id
-            })
-        });
-        const res = await mysql.insertMany(Tables.SUBTASKRESULTS, subTaskResultObj);
-        return ResponseBuilder.data({ res:res, status : true });
+    private async addTaskResult(projectId: any, resultId: any) {
+        const query = `INSERT INTO ${Tables.TASKRESULT}(taskid, projectid, resultid, status, modelId, data, title, createdAt) 
+        SELECT id, projectid, '${resultId}', status, modelId, data, title, createdAt FROM tasks where isEnable = 1 and isDelete = 0 and projectid = ?`;
+        await mysql.query(query, [projectId]);
+    }
+    
+    private async addSubtaskResult(projectId: any, resultId: any) {
+        const query = `INSERT INTO ${Tables.SUBTASKRESULTS}(subtaskid, projectid, taskid, resultid, title, description, subid, summary, browser, os, testing, username, field, createdAt) 
+        SELECT id, projectid, taskid, '${resultId}', title, description, subid, summary, browser, os, testing, username, field, createdAt from subtasks where isEnable = 1 and isDelete = 0 and projectid = ?`;
+        await mysql.query(query, [projectId]);
     }
 
     public async addResultAndSubtaskResult(projectId: any) {
-        await this.addResult(projectId);
-        await this.bulkAddSubtaskResult(projectId);
+        const resultId = await this.addResult(projectId);
+        await this.addTaskResult(projectId, resultId);
+        await this.addSubtaskResult(projectId, resultId);
     }
 }

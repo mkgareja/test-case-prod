@@ -64,8 +64,7 @@ export class ProjectController {
         const result:any = await this.projectUtils.addProject(projectObj);
         await this.projectUtils.addProjectUsers(projectObjnew);
         const msg = req.t('PROJECT_ADDED');
-        res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg, data: result.result.newDevice });
-        this.resultUtils.addResult(uuid);
+        res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg, data: result.result.newDevice, projectid: uuid });
     };
     public addUserToProject = async (req: any, res: Response) => {
         const uuid2 = uuidv4();
@@ -267,6 +266,7 @@ export class ProjectController {
                 isProcessing:1
             }
             const result: any = await this.projectUtils.addTestRun(tempObj);
+            await this.resultUtils.addResultAndSubtaskResult(id);
             if (result.result.status == true) {
                 const msg = req.t('TEST_RUN_ADDED');
                 res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
@@ -327,7 +327,6 @@ export class ProjectController {
         } else {
             res.status(Constants.NOT_FOUND_CODE).json(result);
         }
-        this.resultUtils.addResultAndSubtaskResult(id);
     }
     public getTestRun = async (req: any, res: Response) => {
         const { id = null } = req.params;

@@ -40,7 +40,6 @@ export class TaskController {
     };
 
     private async getSubTaskObj(uuid: any, body: any) {
-        const field = (body.details.field == undefined || body.details.field.length == 0) ? null : body.details.field;
         let infoObj: any = {
             id:uuid,
             projectid: body.projectid,
@@ -55,7 +54,7 @@ export class TaskController {
             username: body.details.username
         };
         if (body.details.field != undefined && body.details.field.length != 0) {
-            infoObj.field = field;
+            infoObj.field = JSON.stringify(body.details.field);
         }
         return infoObj;
     }
@@ -70,7 +69,6 @@ export class TaskController {
         } else {
             res.status(Constants.NOT_FOUND_CODE).json(result);
         }
-        this.resultUtils.addSubtaskResult(infoObj, uuid);
     };
 
     public updateTask = async (req: any, res: Response) => {

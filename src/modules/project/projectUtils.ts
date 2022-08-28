@@ -1,7 +1,7 @@
 import * as mysql from 'jm-ez-mysql';
 import { ResponseBuilder } from '../../helpers/responseBuilder';
 import { SendEmail } from '../../helpers/sendEmail';
-import { Tables, UserTable,OrgEmailsTable,TestMergeTable,ProjectTable,TestrunsTable, projectUsersTable,OrganizationUsersTable, TaskTable, SubTaskTable, ResultTable, SubtaskResultsTable } from '../../config/tables';
+import { Tables, UserTable,OrgEmailsTable,TestMergeTable,ProjectTable,TestrunsTable, projectUsersTable,OrganizationUsersTable, TaskTable, SubTaskTable, ResultTable, SubtaskResultsTable, TaskResultTable } from '../../config/tables';
 
 export class ProjectUtils {
    // Get User devices
@@ -174,35 +174,31 @@ export class ProjectUtils {
   }
 
   private async getTestRunResponse(result: any) {
+    result = [...new Map(result.map(item => [item['subtaskResultId'], item])).values()];
     result.forEach((x: { field: string; }) => {
       x.field = JSON.parse(x.field);
     });
-    const hash = result.reduce((p,c) => (p[c.taskId] ? p[c.taskId].push(c) : p[c.taskId] = [c],p), {});
-    const taskGroupedBy = Object.keys(hash).map(k => ({ taskTitle: hash[k][0].taskTitle, id: hash[k][0].taskId, lists: hash[k] }));
+    const hash = result.reduce((p,c) => (p[c.taskResultId] ? p[c.taskResultId].push(c) : p[c.taskResultId] = [c],p), {});
+    const taskGroupedBy = Object.keys(hash).map(k => ({ taskTitle: hash[k][0].taskTitle, taskResultId: hash[k][0].taskResultId, lists: hash[k] }));
     return { status: true, data: taskGroupedBy };
   }
 
   public async getTestRunByProject(id) {
     const result = await mysql.findAll(
-      `${Tables.PROJECT} p INNER JOIN ${Tables.TASKS} t on t.${TaskTable.PID}=p.${ProjectTable.ID}
-      LEFT JOIN ${Tables.SUBTASKS} as st on t.${TaskTable.ID}=st.${SubTaskTable.TID}
-      LEFT JOIN ${Tables.RESULT} as r on r.${ResultTable.PID}=st.${SubTaskTable.PID}
-      LEFT JOIN ${Tables.SUBTASKRESULTS} as sr on sr.${SubtaskResultsTable.RESULT_ID}=r.${ResultTable.ID}`,
+      `${Tables.PROJECT} p 
+      LEFT JOIN ${Tables.TASKRESULT} t on t.${TaskResultTable.PID}=p.${ProjectTable.ID}
+      LEFT JOIN ${Tables.RESULT} as r on r.${ResultTable.PID}=t.${TaskResultTable.PID}
+      LEFT JOIN ${Tables.SUBTASKRESULTS} as sr on sr.${SubtaskResultsTable.RID}=r.${ResultTable.ID}`,
       [
-        `IFNULL(st.${SubTaskTable.FIELD}, p.${ProjectTable.FIELD}) as field, t.${TaskTable.TITLE} as taskTitle, t.${TaskTable.ID} as taskId,
-        st.${SubTaskTable.ID} as subtaskId, st.${SubTaskTable.SUB_ID}, st.${SubTaskTable.OS}, st.${SubTaskTable.TITLE} as subTaskTitle, st.${SubTaskTable.BROWSER}, 
-        st.${SubTaskTable.SUMMARY}, st.${SubTaskTable.TESTING}, st.${SubTaskTable.USERNAME}, st.${SubTaskTable.DESC}, 
-        sr.${SubtaskResultsTable.ID} as result_id, sr.${SubtaskResultsTable.STATUS}`
+        `IFNULL(sr.${SubtaskResultsTable.FIELD}, p.${ProjectTable.FIELD}) as field, t.${TaskResultTable.TITLE} as taskTitle, t.${TaskResultTable.ID} as taskResultId,
+        sr.${SubtaskResultsTable.SID} as subtaskId, sr.${SubtaskResultsTable.SUB_ID}, sr.${SubtaskResultsTable.OS}, sr.${SubtaskResultsTable.TITLE} as subTaskTitle, 
+        sr.${SubtaskResultsTable.BROWSER}, sr.${SubtaskResultsTable.SUMMARY}, sr.${SubtaskResultsTable.TESTING}, sr.${SubtaskResultsTable.USERNAME}, sr.${SubtaskResultsTable.DESC}, 
+        sr.${SubtaskResultsTable.ID} as subtaskResultId, sr.${SubtaskResultsTable.TESTSTATUS}`
       ],
-        `t.${SubTaskTable.IS_DELETE} = 0 AND t.${SubTaskTable.IS_ENABLE} = 1 and t.${TaskTable.PID} = ? ORDER BY t.${SubTaskTable.CREATED_AT} DESC`, [id]
+        `r.${ResultTable.IS_ACTIVE} = 1 AND r.${ResultTable.IS_DELETE} = 0 AND t.${TaskResultTable.PID} = ? ORDER BY t.${SubtaskResultsTable.CREATED_AT} DESC`, [id]
     );
     const testRunResponse = await this.getTestRunResponse(result);
     return testRunResponse;
-    if (result) {
-      return result;
-    } else {
-      return false;
-    }
   }
 
   public async getTestRuns(id) {
