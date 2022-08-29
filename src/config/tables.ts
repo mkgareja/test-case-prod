@@ -474,6 +474,9 @@ export enum ResultTable {
   PID = 'project_id',
   IS_ACTIVE = 'is_active',
   IS_DELETE = 'is_delete',
+  USERID = 'userid',
+  NAME = 'name',
+  DESC = 'description',
   CREATED_AT='created_at',
   UPDATED_AT='updated_at'
 }

@@ -249,6 +249,7 @@ export class ProjectController {
             res.status(Constants.NOT_FOUND_CODE).json(result);
         }
     }
+
     public addTestRun = async (req: any, res: Response) => {
         const uuid = uuidv4();
         const { id = null } = req.params;
@@ -258,6 +259,16 @@ export class ProjectController {
         } else {
             const tempObj = {
                 id: uuid,
+                userid: req._user.id,
+                project_id: id,
+                is_active: 1,
+                name: req.body.name,
+                description: req.body.description,
+                created_at: new Date(),
+                updated_at: new Date(),
+            }
+            const resTempObj = {
+                id: uuid,
                 name: req.body.name,
                 userid: req._user.id,
                 projectid: id,
@@ -265,16 +276,17 @@ export class ProjectController {
                 description: req.body.description,
                 isProcessing:1
             }
-            const result: any = await this.projectUtils.addTestRun(tempObj);
-            await this.resultUtils.addResultAndSubtaskResult(id);
+            const result: any = await this.resultUtils.addResultAndSubtaskResult(tempObj);
+            const statusCount = await this.resultUtils.getSubtaskResultStatusCount(id);
             if (result.result.status == true) {
                 const msg = req.t('TEST_RUN_ADDED');
-                res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
+                res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg, count: statusCount, data: resTempObj });
             } else {
                 res.status(Constants.INTERNAL_SERVER_ERROR_CODE).json(result);
             }
         }
     }
+
     public getObjects = async (obj, key, val, newVal) => {
         let newValue = newVal;
         let objects = [];
@@ -331,18 +343,9 @@ export class ProjectController {
     public getTestRun = async (req: any, res: Response) => {
         const { id = null } = req.params;
         let result = await this.projectUtils.getTestRun(id);
-        let finalData = JSON.parse(result[0].data);
-        let finalField = JSON.parse(result[0].field);
-        let resArray = getPropValues(finalData, "status");
-        let temp_count = {
-            pass: resArray.filter(x => x == 'pass').length,
-            failed: resArray.filter(x => x == 'failed').length,
-            block: resArray.filter(x => x == 'block').length,
-            fail: resArray.filter(x => x == 'fail').length,
-            untested: resArray.filter(x => x == 'untested').length
-        }
-        if(result[0].data){
-            res.status(Constants.SUCCESS_CODE).json({ status: true, count: temp_count, data: finalData, field: finalField });
+        const statusCount = await this.resultUtils.getStatusCountByResultId(id);
+        if(result.status){
+            res.status(Constants.SUCCESS_CODE).json({ status: true, count: statusCount, data: result.data });
         }else{
             res.status(Constants.NOT_FOUND_CODE).json({ status: false,error: req.t('NO_DATA') });
         }
@@ -351,7 +354,8 @@ export class ProjectController {
         const { id = null } = req.params;
         try {
             let result = await this.projectUtils.getTestRunByProject(id);
-            res.status(Constants.SUCCESS_CODE).json(result);
+            const statusCount = await this.resultUtils.getSubtaskResultStatusCount(id);
+            res.status(Constants.SUCCESS_CODE).json({count: statusCount, data: result });
         } catch (err) {
             console.log(`Error at getting testRun, error: ${err}`);
             res.status(Constants.NOT_FOUND_CODE).json({ status: false, error: req.t('NO_DATA') });

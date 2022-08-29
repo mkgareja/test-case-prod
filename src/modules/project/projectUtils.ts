@@ -163,14 +163,21 @@ export class ProjectUtils {
     )
   }
   public async getTestRun(id) {
-    const result = await mysql.findAll(Tables.TESTRUNS,
-      [TestrunsTable.FIELD, TestrunsTable.DATA, TestrunsTable.DESCRIPTION, TestrunsTable.CREATED_AT, TestrunsTable.NAME], `${TestrunsTable.IS_DELETE} = 0 AND ${TestrunsTable.IS_ENABLE} = 1 and ${TestrunsTable.ID} = ? ORDER BY ${TestrunsTable.CREATED_AT} DESC`, [id]);
-    if (result.length >= 0) {
-      return result;
-    } else {
-      return false;
-    }
-
+    const result = await mysql.findAll(
+      `${Tables.SUBTASKRESULTS} sr
+      LEFT JOIN ${Tables.TASKRESULT} t on t.${TaskResultTable.TID}=sr.${SubtaskResultsTable.TID}
+      LEFT JOIN ${Tables.RESULT} as r on r.${ResultTable.ID}=sr.${SubtaskResultsTable.RID}
+      LEFT JOIN ${Tables.PROJECT} as p on p.${ProjectTable.ID}=r.${ResultTable.PID}`,
+      [
+        `IFNULL(sr.${SubtaskResultsTable.FIELD}, p.${ProjectTable.FIELD}) as field, ANY_VALUE(t.${TaskResultTable.TITLE}) as taskTitle, t.${TaskResultTable.TID} as taskId,
+        sr.${SubtaskResultsTable.SID} as subtaskId, sr.${SubtaskResultsTable.SUB_ID}, sr.${SubtaskResultsTable.OS}, sr.${SubtaskResultsTable.TITLE} as subTaskTitle, 
+        sr.${SubtaskResultsTable.BROWSER}, sr.${SubtaskResultsTable.SUMMARY}, sr.${SubtaskResultsTable.TESTING}, sr.${SubtaskResultsTable.USERNAME}, sr.${SubtaskResultsTable.DESC}, 
+        sr.${SubtaskResultsTable.ID} as subtaskResultId, sr.${SubtaskResultsTable.TESTSTATUS}`
+      ],
+        `r.${ResultTable.IS_ACTIVE} = 1 AND r.${ResultTable.IS_DELETE} = 0 AND sr.${SubtaskResultsTable.RID} = ? GROUP BY sr.${SubtaskResultsTable.ID} ORDER BY sr.${SubtaskResultsTable.CREATED_AT} DESC`, [id]
+    );
+    const testRunResponse = await this.getTestRunResponse(result);
+    return testRunResponse;
   }
 
   private async getTestRunResponse(result: any) {
@@ -202,14 +209,12 @@ export class ProjectUtils {
 
   public async getTestRuns(id) {
     const result = await mysql.findAll(
-      `${Tables.TESTRUNS} tr
-      LEFT JOIN ${Tables.USER} as u on tr.${TestrunsTable.UPDATEDBY}=u.${UserTable.ID}
-      LEFT JOIN ${Tables.RESULT} as r on r.${ResultTable.PID}=tr.${TestrunsTable.PROJECTID}`,
+      `${Tables.RESULT} r
+      LEFT JOIN ${Tables.USER} as u on r.${ResultTable.USERID}=u.${UserTable.ID}`,
       [
-        `tr.${TestrunsTable.ID},tr.${TestrunsTable.DESCRIPTION},tr.${TestrunsTable.CREATED_AT},tr.${TestrunsTable.NAME},
-        u.${UserTable.FIRSTNAME},r.${ResultTable.ID} as resultId`
+        `r.${ResultTable.ID}, r.${ResultTable.DESC}, r.${ResultTable.CREATED_AT}, r.${ResultTable.NAME}, u.${UserTable.FIRSTNAME}`
       ], 
-        `tr.${TestrunsTable.IS_DELETE} = 0 AND tr.${TestrunsTable.IS_ENABLE} = 1 and tr.${TestrunsTable.ISPROCESSING} = 0 and tr.${TestrunsTable.PROJECTID} = ? ORDER BY tr.${TestrunsTable.CREATED_AT} DESC`, [id]);
+        `r.${ResultTable.IS_DELETE} = 0 and r.${ResultTable.PID} = ? ORDER BY r.${ResultTable.CREATED_AT} DESC`, [id]);
       if (result.length >= 0) {
         return result;
       } else {
