@@ -181,20 +181,20 @@ export class ProjectUtils {
     const taskGroupedBy = Object.keys(hash).map(k => ({ taskTitle: hash[k][0].taskTitle, taskId: hash[k][0].taskId, lists: hash[k] }));
     return { status: true, data: taskGroupedBy };
   }
-
+   
   public async getTestRunByProject(id) {
     const result = await mysql.findAll(
-      `${Tables.PROJECT} p 
-      LEFT JOIN ${Tables.TASKRESULT} t on t.${TaskResultTable.PID}=p.${ProjectTable.ID}
-      LEFT JOIN ${Tables.RESULT} as r on r.${ResultTable.PID}=t.${TaskResultTable.PID}
-      LEFT JOIN ${Tables.SUBTASKRESULTS} as sr on sr.${SubtaskResultsTable.RID}=r.${ResultTable.ID}`,
+      `${Tables.SUBTASKRESULTS} sr
+      LEFT JOIN ${Tables.TASKRESULT} t on t.${TaskResultTable.TID}=sr.${SubtaskResultsTable.TID}
+      LEFT JOIN ${Tables.RESULT} as r on r.${ResultTable.ID}=sr.${SubtaskResultsTable.RID}
+      LEFT JOIN ${Tables.PROJECT} as p on p.${ProjectTable.ID}=r.${ResultTable.PID}`,
       [
-        `IFNULL(sr.${SubtaskResultsTable.FIELD}, p.${ProjectTable.FIELD}) as field, t.${TaskResultTable.TITLE} as taskTitle, t.${TaskResultTable.TID} as taskId,
+        `IFNULL(sr.${SubtaskResultsTable.FIELD}, p.${ProjectTable.FIELD}) as field, ANY_VALUE(t.${TaskResultTable.TITLE}) as taskTitle, t.${TaskResultTable.TID} as taskId,
         sr.${SubtaskResultsTable.SID} as subtaskId, sr.${SubtaskResultsTable.SUB_ID}, sr.${SubtaskResultsTable.OS}, sr.${SubtaskResultsTable.TITLE} as subTaskTitle, 
         sr.${SubtaskResultsTable.BROWSER}, sr.${SubtaskResultsTable.SUMMARY}, sr.${SubtaskResultsTable.TESTING}, sr.${SubtaskResultsTable.USERNAME}, sr.${SubtaskResultsTable.DESC}, 
         sr.${SubtaskResultsTable.ID} as subtaskResultId, sr.${SubtaskResultsTable.TESTSTATUS}`
       ],
-        `r.${ResultTable.IS_ACTIVE} = 1 AND r.${ResultTable.IS_DELETE} = 0 AND t.${TaskResultTable.PID} = ? ORDER BY t.${SubtaskResultsTable.CREATED_AT} DESC`, [id]
+        `r.${ResultTable.IS_ACTIVE} = 1 AND r.${ResultTable.IS_DELETE} = 0 AND t.${TaskResultTable.PID} = ? GROUP BY sr.${SubtaskResultsTable.ID} ORDER BY sr.${SubtaskResultsTable.CREATED_AT} DESC`, [id]
     );
     const testRunResponse = await this.getTestRunResponse(result);
     return testRunResponse;
