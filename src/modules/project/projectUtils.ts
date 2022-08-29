@@ -174,12 +174,11 @@ export class ProjectUtils {
   }
 
   private async getTestRunResponse(result: any) {
-    result = [...new Map(result.map(item => [item['subtaskResultId'], item])).values()];
     result.forEach((x: { field: string; }) => {
       x.field = JSON.parse(x.field);
     });
-    const hash = result.reduce((p,c) => (p[c.taskResultId] ? p[c.taskResultId].push(c) : p[c.taskResultId] = [c],p), {});
-    const taskGroupedBy = Object.keys(hash).map(k => ({ taskTitle: hash[k][0].taskTitle, taskResultId: hash[k][0].taskResultId, lists: hash[k] }));
+    const hash = result.reduce((p,c) => (p[c.taskId] ? p[c.taskId].push(c) : p[c.taskId] = [c],p), {});
+    const taskGroupedBy = Object.keys(hash).map(k => ({ taskTitle: hash[k][0].taskTitle, taskId: hash[k][0].taskId, lists: hash[k] }));
     return { status: true, data: taskGroupedBy };
   }
 
@@ -190,7 +189,7 @@ export class ProjectUtils {
       LEFT JOIN ${Tables.RESULT} as r on r.${ResultTable.PID}=t.${TaskResultTable.PID}
       LEFT JOIN ${Tables.SUBTASKRESULTS} as sr on sr.${SubtaskResultsTable.RID}=r.${ResultTable.ID}`,
       [
-        `IFNULL(sr.${SubtaskResultsTable.FIELD}, p.${ProjectTable.FIELD}) as field, t.${TaskResultTable.TITLE} as taskTitle, t.${TaskResultTable.ID} as taskResultId,
+        `IFNULL(sr.${SubtaskResultsTable.FIELD}, p.${ProjectTable.FIELD}) as field, t.${TaskResultTable.TITLE} as taskTitle, t.${TaskResultTable.TID} as taskId,
         sr.${SubtaskResultsTable.SID} as subtaskId, sr.${SubtaskResultsTable.SUB_ID}, sr.${SubtaskResultsTable.OS}, sr.${SubtaskResultsTable.TITLE} as subTaskTitle, 
         sr.${SubtaskResultsTable.BROWSER}, sr.${SubtaskResultsTable.SUMMARY}, sr.${SubtaskResultsTable.TESTING}, sr.${SubtaskResultsTable.USERNAME}, sr.${SubtaskResultsTable.DESC}, 
         sr.${SubtaskResultsTable.ID} as subtaskResultId, sr.${SubtaskResultsTable.TESTSTATUS}`
