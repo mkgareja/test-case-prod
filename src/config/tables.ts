@@ -16,6 +16,9 @@ export class Tables {
   public static readonly TASKS = 'tasks';
   public static readonly TESTRUNS = 'testruns';
   public static readonly SUBTASKS = 'subtasks';
+  public static readonly RESULT = 'result';
+  public static readonly TASKRESULT = 'taskResult';
+  public static readonly SUBTASKRESULTS = 'subtaskResult';
   public static readonly ORGANIZATION = 'organization';
   public static readonly ORGEMAIL = 'orgEmail';
   public static readonly ORGANIZATIONUSER = 'orgUsers';
@@ -465,6 +468,50 @@ export enum SubTaskTable {
   DESC = 'description',
   FIELD = 'field'
 }
+
+export enum ResultTable {
+  ID = 'id',
+  PID = 'project_id',
+  IS_ACTIVE = 'is_active',
+  IS_DELETE = 'is_delete',
+  USERID = 'userid',
+  NAME = 'name',
+  DESC = 'description',
+  CREATED_AT='created_at',
+  UPDATED_AT='updated_at'
+}
+
+export enum TaskResultTable {
+  ID = 'id',
+  TID = 'taskid',
+  PID = 'projectid',
+  RID = 'resultid',
+  STATUS = 'status',
+  MODEL_ID = 'modelId',
+  DATA = 'data',
+  TITLE = 'title',
+  CREATED_AT = 'createdAt',
+}
+
+export enum SubtaskResultsTable {
+  ID = 'id',
+  SID = 'subtaskid',
+  PID = 'projectid',
+  TID = 'taskid',
+  RID = 'resultid',
+  TITLE = 'title',
+  DESC = 'description',
+  SUB_ID = 'subid',
+  SUMMARY = 'summary',
+  BROWSER = 'browser',
+  OS = 'os',
+  TESTING = 'testing',
+  USERNAME = 'username',
+  FIELD = 'field',
+  TESTSTATUS = 'testStatus',
+  CREATED_AT='createdAt',
+}
+
 // modules table's fields
 export enum ModuleTable {
   ID = 'id',

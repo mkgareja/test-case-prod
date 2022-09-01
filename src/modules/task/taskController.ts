@@ -3,9 +3,11 @@ import { Request, Response } from 'express';
 import { TaskUtils } from './taskUtils';
 import { v4 as uuidv4 } from 'uuid';
 import { ResponseBuilder } from '../../helpers/responseBuilder';
+import { ResultUtils } from '../result/resultUtils';
 
 export class TaskController {
     private taskUtils: TaskUtils = new TaskUtils();
+    private resultUtils: ResultUtils = new ResultUtils();
     public getTask = async (req: any, res: Response) => {
         let TaskResult = await this.taskUtils.getTasks(req.params.id);
         let SubTaskResult = await this.taskUtils.getSubTasks(req.params.id);
@@ -38,12 +40,11 @@ export class TaskController {
     };
 
     private async getSubTaskObj(uuid: any, body: any) {
-        let infoObj = {
+        let infoObj: any = {
             id:uuid,
             projectid: body.projectid,
             taskid: body.taskid,
             title: body.title,
-            field: JSON.stringify(body.details.field),
             subid: body.details.subid,
             description: body.details.description,
             summary: body.details.summary,
@@ -52,6 +53,9 @@ export class TaskController {
             testing: body.details.testing,
             username: body.details.username
         };
+        if (body.details.field != undefined && body.details.field.length != 0) {
+            infoObj.field = JSON.stringify(body.details.field);
+        }
         return infoObj;
     }
 
@@ -129,7 +133,7 @@ export class TaskController {
         }
         const result:ResponseBuilder = await this.taskUtils.updateTask(id,projectObj);
         const result2:ResponseBuilder = await this.taskUtils.bulkUpdateSubtasks(id,projectObj);
-        if (result.result.status == true && result2.result.status == true) {
+        if (result.result.status == true) {
             result.msg = req.t('TASK_SUBTASK_DELETED');
             res.status(Constants.SUCCESS_CODE).json(result);
         } else {

@@ -1,7 +1,7 @@
 import * as mysql from 'jm-ez-mysql';
 import { ResponseBuilder } from '../../helpers/responseBuilder';
 import { SendEmail } from '../../helpers/sendEmail';
-import { Tables, UserTable,OrgEmailsTable,TestMergeTable,StaticContentTable,ProjectTable,TestrunsTable, projectUsersTable,OrganizationUsersTable, OrganizationTable, TaskTable, SubTaskTable } from '../../config/tables';
+import { Tables, UserTable,OrgEmailsTable,TestMergeTable,ProjectTable,TestrunsTable, projectUsersTable,OrganizationUsersTable, TaskTable, SubTaskTable, ResultTable, SubtaskResultsTable, TaskResultTable } from '../../config/tables';
 
 export class ProjectUtils {
    // Get User devices
@@ -16,7 +16,7 @@ export class ProjectUtils {
   }
   public async addTestRun(tempObj: Json): Promise<ResponseBuilder> {
     const data = await mysql.insert(Tables.TESTRUNS, tempObj);
-    return ResponseBuilder.data({ data:data });
+    return ResponseBuilder.data({ status: true, data:data });
   }
   public async updateUserProject(uid,Info,pid): Promise<ResponseBuilder> {
     const  result = await mysql.updateFirst(Tables.PROJECTUSERS, Info, `${projectUsersTable.USERID} = ? and ${projectUsersTable.PROJECTID} = ?`, [uid,pid]);
@@ -48,7 +48,7 @@ export class ProjectUtils {
     
   }
   public async updateTestRun(id,Info): Promise<ResponseBuilder> {
-    const  result = await mysql.updateFirst(Tables.TESTRUNS, Info, `${ProjectTable.ID} = ?`, [id]);
+    const  result = await mysql.updateFirst(Tables.TESTRUNS, Info, `${TestrunsTable.PROJECTID} = ?`, [id]);
     if (result.affectedRows > 0) {
       return ResponseBuilder.data({ status: true, data: result });
     } else {
@@ -120,7 +120,7 @@ export class ProjectUtils {
       x.field = JSON.parse(x.field);
     });
     const hash = result.reduce((p,c) => (p[c.taskId] ? p[c.taskId].push(c) : p[c.taskId] = [c],p), {});
-    const taskGroupedBy = Object.keys(hash).map(k => ({model: hash[k][0].name, id: hash[k][0].taskId, lists: hash[k]}));
+    const taskGroupedBy = Object.keys(hash).map(k => ({ taskTitle: hash[k][0].taskTitle, id: hash[k][0].taskId, lists: hash[k] }));
     return { status: true, data: taskGroupedBy };
   }
 
@@ -129,11 +129,12 @@ export class ProjectUtils {
       `${Tables.PROJECT} p INNER JOIN ${Tables.TASKS} t on t.${TaskTable.PID}=p.${ProjectTable.ID}
       LEFT JOIN ${Tables.SUBTASKS} as st on t.${TaskTable.ID}=st.${SubTaskTable.TID}`,
       [
-        `IFNULL(st.${SubTaskTable.FIELD}, p.${ProjectTable.FIELD}) as field, t.${TaskTable.TITLE}, t.${TaskTable.ID} as taskId,
-        st.${SubTaskTable.ID} as subtaskId, st.${SubTaskTable.SUB_ID}, st.${SubTaskTable.OS}, st.${SubTaskTable.TITLE}, st.${SubTaskTable.BROWSER}, 
+        `IFNULL(st.${SubTaskTable.FIELD}, p.${ProjectTable.FIELD}) as field, t.${TaskTable.TITLE} as taskTitle, t.${TaskTable.ID} as taskId,
+        st.${SubTaskTable.ID} as subtaskId, st.${SubTaskTable.SUB_ID}, st.${SubTaskTable.OS}, st.${SubTaskTable.TITLE} as subTaskTitle, st.${SubTaskTable.BROWSER}, 
         st.${SubTaskTable.SUMMARY}, st.${SubTaskTable.TESTING}, st.${SubTaskTable.USERNAME}, st.${SubTaskTable.DESC}`
       ],
-        `t.${SubTaskTable.IS_DELETE} = 0 AND t.${SubTaskTable.IS_ENABLE} = 1 and t.${TaskTable.PID} = ? ORDER BY t.${SubTaskTable.CREATED_AT} DESC`, [id]
+        `t.${TaskTable.IS_DELETE} = 0 AND t.${TaskTable.IS_ENABLE} = 1 AND t.${TaskTable.PID} = ? AND st.${SubTaskTable.IS_ENABLE} = 1
+        AND st.${SubTaskTable.IS_DELETE} = 0 ORDER BY t.${SubTaskTable.CREATED_AT} DESC`, [id]
     );
     const taskResponse = await this.getTaskResponse(result);
     return taskResponse;
@@ -162,35 +163,58 @@ export class ProjectUtils {
     )
   }
   public async getTestRun(id) {
-    const result = await mysql.findAll(Tables.TESTRUNS,
-      [TestrunsTable.FIELD, TestrunsTable.DATA, TestrunsTable.DESCRIPTION, TestrunsTable.CREATED_AT, TestrunsTable.NAME], `${TestrunsTable.IS_DELETE} = 0 AND ${TestrunsTable.IS_ENABLE} = 1 and ${TestrunsTable.ID} = ? ORDER BY ${TestrunsTable.CREATED_AT} DESC`, [id]);
-    if (result.length >= 0) {
-      return result;
-    } else {
-      return false;
-    }
-
+    const result = await mysql.findAll(
+      `${Tables.SUBTASKRESULTS} sr
+      LEFT JOIN ${Tables.TASKRESULT} t on t.${TaskResultTable.TID}=sr.${SubtaskResultsTable.TID}
+      LEFT JOIN ${Tables.RESULT} as r on r.${ResultTable.ID}=sr.${SubtaskResultsTable.RID}
+      LEFT JOIN ${Tables.PROJECT} as p on p.${ProjectTable.ID}=r.${ResultTable.PID}`,
+      [
+        `IFNULL(sr.${SubtaskResultsTable.FIELD}, p.${ProjectTable.FIELD}) as field, ANY_VALUE(t.${TaskResultTable.TITLE}) as taskTitle, t.${TaskResultTable.TID} as taskId,
+        sr.${SubtaskResultsTable.SID} as subtaskId, sr.${SubtaskResultsTable.SUB_ID}, sr.${SubtaskResultsTable.OS}, sr.${SubtaskResultsTable.TITLE} as subTaskTitle, 
+        sr.${SubtaskResultsTable.BROWSER}, sr.${SubtaskResultsTable.SUMMARY}, sr.${SubtaskResultsTable.TESTING}, sr.${SubtaskResultsTable.USERNAME}, sr.${SubtaskResultsTable.DESC}, 
+        sr.${SubtaskResultsTable.ID} as subtaskResultId, sr.${SubtaskResultsTable.TESTSTATUS}`
+      ],
+        `r.${ResultTable.IS_ACTIVE} = 1 AND r.${ResultTable.IS_DELETE} = 0 AND sr.${SubtaskResultsTable.RID} = ? GROUP BY sr.${SubtaskResultsTable.ID} ORDER BY sr.${SubtaskResultsTable.CREATED_AT} DESC`, [id]
+    );
+    const testRunResponse = await this.getTestRunResponse(result);
+    return testRunResponse;
   }
+
+  private async getTestRunResponse(result: any) {
+    result.forEach((x: { field: string; }) => {
+      x.field = JSON.parse(x.field);
+    });
+    const hash = result.reduce((p,c) => (p[c.taskId] ? p[c.taskId].push(c) : p[c.taskId] = [c],p), {});
+    const taskGroupedBy = Object.keys(hash).map(k => ({ taskTitle: hash[k][0].taskTitle, taskId: hash[k][0].taskId, lists: hash[k] }));
+    return { status: true, data: taskGroupedBy };
+  }
+   
   public async getTestRunByProject(id) {
-
-    const result = await mysql.first(Tables.TESTRUNS,
-      [TestrunsTable.NAME,TestrunsTable.ID,TestrunsTable.FIELD, TestrunsTable.DATA, TestrunsTable.DESCRIPTION, TestrunsTable.CREATED_AT, TestrunsTable.NAME], `${TestrunsTable.IS_DELETE} = 0 AND ${TestrunsTable.IS_ENABLE} = 1 and ${TestrunsTable.ISPROCESSING} = 1 and ${TestrunsTable.PROJECTID} = ? ORDER BY ${TestrunsTable.CREATED_AT} DESC`, [id]);
-    if (result) {
-      return result;
-    } else {
-      return false;
-    }
-
-
+    const result = await mysql.findAll(
+      `${Tables.SUBTASKRESULTS} sr
+      LEFT JOIN ${Tables.TASKRESULT} t on t.${TaskResultTable.TID}=sr.${SubtaskResultsTable.TID}
+      LEFT JOIN ${Tables.RESULT} as r on r.${ResultTable.ID}=sr.${SubtaskResultsTable.RID}
+      LEFT JOIN ${Tables.PROJECT} as p on p.${ProjectTable.ID}=r.${ResultTable.PID}`,
+      [
+        `IFNULL(sr.${SubtaskResultsTable.FIELD}, p.${ProjectTable.FIELD}) as field, ANY_VALUE(t.${TaskResultTable.TITLE}) as taskTitle, t.${TaskResultTable.TID} as taskId,
+        sr.${SubtaskResultsTable.SID} as subtaskId, sr.${SubtaskResultsTable.SUB_ID}, sr.${SubtaskResultsTable.OS}, sr.${SubtaskResultsTable.TITLE} as subTaskTitle, 
+        sr.${SubtaskResultsTable.BROWSER}, sr.${SubtaskResultsTable.SUMMARY}, sr.${SubtaskResultsTable.TESTING}, sr.${SubtaskResultsTable.USERNAME}, sr.${SubtaskResultsTable.DESC}, 
+        sr.${SubtaskResultsTable.ID} as subtaskResultId, sr.${SubtaskResultsTable.TESTSTATUS}`
+      ],
+        `r.${ResultTable.IS_ACTIVE} = 1 AND r.${ResultTable.IS_DELETE} = 0 AND t.${TaskResultTable.PID} = ? GROUP BY sr.${SubtaskResultsTable.ID} ORDER BY sr.${SubtaskResultsTable.CREATED_AT} DESC`, [id]
+    );
+    const testRunResponse = await this.getTestRunResponse(result);
+    return testRunResponse;
   }
+
   public async getTestRuns(id) {
     const result = await mysql.findAll(
-      `${Tables.TESTRUNS} tr
-      LEFT JOIN ${Tables.USER} as u on tr.${TestrunsTable.UPDATEDBY}=u.${UserTable.ID}`,
+      `${Tables.RESULT} r
+      LEFT JOIN ${Tables.USER} as u on r.${ResultTable.USERID}=u.${UserTable.ID}`,
       [
-        `tr.${TestrunsTable.ID},tr.${TestrunsTable.DESCRIPTION},tr.${TestrunsTable.CREATED_AT},tr.${TestrunsTable.NAME},u.${UserTable.FIRSTNAME}`
+        `r.${ResultTable.ID}, r.${ResultTable.DESC}, r.${ResultTable.CREATED_AT}, r.${ResultTable.NAME}, u.${UserTable.FIRSTNAME}`
       ], 
-        `tr.${TestrunsTable.IS_DELETE} = 0 AND tr.${TestrunsTable.IS_ENABLE} = 1 and tr.${TestrunsTable.ISPROCESSING} = 0 and tr.${TestrunsTable.PROJECTID} = ? ORDER BY tr.${TestrunsTable.CREATED_AT} DESC`, [id]);
+        `r.${ResultTable.IS_DELETE} = 0 and r.${ResultTable.PID} = ? ORDER BY r.${ResultTable.CREATED_AT} DESC`, [id]);
       if (result.length >= 0) {
         return result;
       } else {

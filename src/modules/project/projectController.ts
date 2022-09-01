@@ -5,11 +5,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { AuthUtils } from '../auth/authUtils';
 import { ResponseBuilder } from '../../helpers/responseBuilder';
 import * as CryptoJS from 'crypto-js';
+import { ResultUtils } from '../result/resultUtils';
 const getPropValues = (o, prop) => (res => (JSON.stringify(o, (key, value) => (key === prop && res.push(value), value)), res))([]);
 
 export class ProjectController {
     private authUtils: AuthUtils = new AuthUtils();
     private projectUtils: ProjectUtils = new ProjectUtils();
+    private resultUtils: ResultUtils = new ResultUtils();
     public getProject = async (req: any, res: Response) => {
         let result;
         if (req._user.role == 1 || req._user.role == 2) {
@@ -62,7 +64,7 @@ export class ProjectController {
         const result:any = await this.projectUtils.addProject(projectObj);
         await this.projectUtils.addProjectUsers(projectObjnew);
         const msg = req.t('PROJECT_ADDED');
-        res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg, data: result.result.newDevice });
+        res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg, data: result.result.newDevice, projectid: uuid });
     };
     public addUserToProject = async (req: any, res: Response) => {
         const uuid2 = uuidv4();
@@ -247,60 +249,44 @@ export class ProjectController {
             res.status(Constants.NOT_FOUND_CODE).json(result);
         }
     }
+
     public addTestRun = async (req: any, res: Response) => {
         const uuid = uuidv4();
         const { id = null } = req.params;
         const tasks = await this.projectUtils.getTask(id);
-        if (!tasks[0].data) {
+        if (!tasks.data[0]) {
             res.status(Constants.SUCCESS_CODE).json({ code: 400, msg: 'No test cases found' });
         } else {
-            let filteredArray = await JSON.parse(tasks[0].data)
-            .filter((element) =>
-              element.lists.some((name) => name != ""))
-            .map(element => {
-              return Object.assign({}, element, { lists: element.lists.filter(subElement => subElement.name != "") });
-            }); 
-            filteredArray = filteredArray.filter((element) => element.lists.length>0)
-            if(filteredArray.length>0){
-                const tempObj = {
-                    id: uuid,
-                    name: req.body.name,
-                    userid: req._user.id,
-                    projectid: id,
-                    data: JSON.stringify(filteredArray),
-                    field: tasks[0].field,
-                    createdAt: new Date(),
-                    description: req.body.description,
-                    isProcessing:1
-                }
-                const resTempObj = {
-                    id: uuid,
-                    name: req.body.name,
-                    userid: req._user.id,
-                    projectid: id,
-                    data: filteredArray,
-                    field: JSON.parse(tasks[0].field),
-                    createdAt: new Date(),
-                    description: req.body.description,
-                    isProcessing:1
-                }
-                let resArray = getPropValues(resTempObj.data, "status");
-                let temp_count = {
-                    pass: resArray.filter(x => x == 'pass').length,
-                    failed: resArray.filter(x => x == 'failed').length,
-                    block: resArray.filter(x => x == 'block').length,
-                    fail: resArray.filter(x => x == 'fail').length
-                }
-                // creating user profile
-                const result: any = await this.projectUtils.addTestRun(tempObj);
-                const msg = req.t('TEST_RUN_ADDED');
-                res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg, count: temp_count, data: resTempObj });
-            }else{
-                res.status(Constants.SUCCESS_CODE).json({ code: 400, msg: 'No test cases found' });
+            const tempObj = {
+                id: uuid,
+                userid: req._user.id,
+                project_id: id,
+                is_active: 1,
+                name: req.body.name,
+                description: req.body.description,
+                created_at: new Date(),
+                updated_at: new Date(),
             }
-            
+            const resTempObj = {
+                id: uuid,
+                name: req.body.name,
+                userid: req._user.id,
+                projectid: id,
+                createdAt: new Date(),
+                description: req.body.description,
+                isProcessing:1
+            }
+            const result: any = await this.resultUtils.addResultAndSubtaskResult(tempObj);
+            const statusCount = await this.resultUtils.getSubtaskResultStatusCount(id);
+            if (result.result.status == true) {
+                const msg = req.t('TEST_RUN_ADDED');
+                res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg, count: statusCount, data: resTempObj });
+            } else {
+                res.status(Constants.INTERNAL_SERVER_ERROR_CODE).json(result);
+            }
         }
     }
+
     public getObjects = async (obj, key, val, newVal) => {
         let newValue = newVal;
         let objects = [];
@@ -357,45 +343,23 @@ export class ProjectController {
     public getTestRun = async (req: any, res: Response) => {
         const { id = null } = req.params;
         let result = await this.projectUtils.getTestRun(id);
-        let finalData = JSON.parse(result[0].data);
-        let finalField = JSON.parse(result[0].field);
-        let resArray = getPropValues(finalData, "status");
-        let temp_count = {
-            pass: resArray.filter(x => x == 'pass').length,
-            failed: resArray.filter(x => x == 'failed').length,
-            block: resArray.filter(x => x == 'block').length,
-            fail: resArray.filter(x => x == 'fail').length,
-            untested: resArray.filter(x => x == 'untested').length
-        }
-        if(result[0].data){
-            res.status(Constants.SUCCESS_CODE).json({ status: true, count: temp_count, data: finalData, field: finalField });
+        const statusCount = await this.resultUtils.getStatusCountByResultId(id);
+        if(result.status){
+            res.status(Constants.SUCCESS_CODE).json({ status: true, count: statusCount, data: result.data });
         }else{
             res.status(Constants.NOT_FOUND_CODE).json({ status: false,error: req.t('NO_DATA') });
         }
     };
     public getTestRunByProject = async (req: any, res: Response) => {
         const { id = null } = req.params;
-        let result = await this.projectUtils.getTestRunByProject(id);
-        let finalData ;
-        let finalField;
-        let resArray ;
-        let temp_count;
-        if(result){
-         finalData = JSON.parse(result.data);
-         finalField = JSON.parse(result.field);
-         resArray = getPropValues(finalData, "status");
-         temp_count = {
-            pass: resArray.filter(x => x == 'pass').length,
-            failed: resArray.filter(x => x == 'failed').length,
-            block: resArray.filter(x => x == 'block').length,
-            fail: resArray.filter(x => x == 'fail').length,
-            untested: resArray.filter(x => x == 'untested').length
-        }}
-        if(result && result.data){
-            res.status(Constants.SUCCESS_CODE).json({ name:result.name,id:result.id,status: true, count: temp_count, data: finalData, field: finalField });
-        }else{
-            res.status(Constants.NOT_FOUND_CODE).json({ status: false,error: req.t('NO_DATA') });
-        }
+        try {
+            let result = await this.projectUtils.getTestRunByProject(id);
+            const statusCount = await this.resultUtils.getSubtaskResultStatusCount(id);
+            res.status(Constants.SUCCESS_CODE).json({count: statusCount, data: result });
+        } catch (err) {
+            console.log(`Error at getting testRun, error: ${err}`);
+            res.status(Constants.NOT_FOUND_CODE).json({ status: false, error: req.t('NO_DATA') });
+        };
     };
     public sendTestRunEmail = async (req: any, res: Response) => {
         const { id = null } = req.body;
