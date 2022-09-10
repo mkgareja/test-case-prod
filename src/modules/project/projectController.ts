@@ -301,45 +301,24 @@ export class ProjectController {
         }
         return obj;
     }
+
     public updateTestRun = async (req: any, res: Response) => {
         const { id = null } = req.params;
-        let projectObj;
-        let flag = req.body.flag || '';
-        if (flag) {
-            let result = await this.projectUtils.getTestRun(id);
-            let finalData = JSON.parse(result[0].data);
-            let newData = await this.getObjects(finalData, 'id', req.body.tid, flag)
-            projectObj = {
-                data: JSON.stringify(newData),
-                updatedBy: req._user.id,
-                updatedAt: new Date(),
-                isProcessing: 0
-
-            }
-        } else if (req.body.isProcessing) {
-            projectObj = {
-                data: JSON.stringify(req.body.data),
-                updatedBy: req._user.id,
-                updatedAt: new Date(),
-                isProcessing: 0
-
-            }
-        } else {
-            projectObj = {
-                data: JSON.stringify(req.body.data),
-                updatedBy: req._user.id,
-                updatedAt: new Date()
-            }
+        let flag = req.body.flag || 0;
+        let projectObj = {
+            is_automated: flag,
+            userid: req._user.id,
+            is_processed: 1
         }
-
-        const result: ResponseBuilder = await this.projectUtils.updateTestRun(id, projectObj);
+        const result: ResponseBuilder = await this.projectUtils.updateResult(id, projectObj);
         if (result.result.status == true) {
-            result.msg = req.t('TEST_RUN_ADDED');
+            result.msg = req.t('TEST_RUN_SUBMITTED');
             res.status(Constants.SUCCESS_CODE).json(result);
         } else {
             res.status(Constants.NOT_FOUND_CODE).json(result);
         }
     }
+
     public getTestRun = async (req: any, res: Response) => {
         const { id = null } = req.params;
         let result = await this.projectUtils.getTestRun(id);
@@ -423,6 +402,7 @@ export class ProjectController {
             res.status(Constants.NOT_FOUND_CODE).json({ status: false,error: req.t('NO_DATA') });
         }
     };
+
     public getTestRunsAnalytics = async (req: any, res: Response) => {
         const { id = null } = req.params;
         const { limit = null } = req.params;
@@ -433,6 +413,7 @@ export class ProjectController {
             res.status(Constants.NOT_FOUND_CODE).json({ status: false,error: req.t('NO_DATA') });
         }
     };
+    
     public  deleteProject = async (req: any, res: Response) => {
         const { id = null } = req.params;
         const projectObj = {

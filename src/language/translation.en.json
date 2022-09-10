@@ -38,6 +38,7 @@
   "DEVICE_NOT_REGISTERED": "Device not registered.",
   "PROJECT_ADDED": "Project added successfully.",
   "TEST_RUN_ADDED": "Test run added successfully.",
+  "TEST_RUN_SUBMITTED": "Test run submitted successfully",
   "TASK_ADDED": "Task added successfully.",
   "TASK_UPDATED": "Task updated successfully",
   "TASK_NOT_FOUND": "Task not found",
