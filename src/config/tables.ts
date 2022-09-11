@@ -478,7 +478,9 @@ export enum ResultTable {
   NAME = 'name',
   DESC = 'description',
   CREATED_AT='created_at',
-  UPDATED_AT='updated_at'
+  UPDATED_AT='updated_at',
+  IS_AUTOMATED='is_automated',
+  IS_PROCESSED='is_processed',
 }
 
 export enum TaskResultTable {

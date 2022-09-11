@@ -50,7 +50,7 @@ export class TaskController {
             summary: body.details.summary,
             browser: body.details.browser,
             os: body.details.os,
-            testing: body.details.testing,
+            testing: body.details.testing || 'manual',
             username: body.details.username
         };
         if (body.details.field != undefined && body.details.field.length != 0) {

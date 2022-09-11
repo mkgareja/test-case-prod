@@ -14,7 +14,7 @@ const router: Router = Router();
 const v: Validator = new Validator();
 const mergeController = new MergeController();
 
-router.get('/:id',middleware.getUserAuthorized, mergeController.getMerge)
+router.get('/:id',middleware.getUserAuthorized, mergeController.getMergeByOrg)
 router.get('/mid/:id',middleware.getUserAuthorized, mergeController.getMergeById)
 router.post('/',middleware.getUserAuthorized, mergeController.addMerge)
 router.post('/update/:id',middleware.getUserAuthorized, mergeController.updateProject)
