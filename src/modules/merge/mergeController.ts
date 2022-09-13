@@ -14,10 +14,10 @@ export class MergeController {
     private mergeUtils: MergeUtils = new MergeUtils();
 
 
-    public getMergeByOrg = async (req: any, res: Response) => {
+    public getMergeByProjectId = async (req: any, res: Response) => {
         const { id = null } = req.params;
         // const { limit = null } = req.params;
-        let result = await this.mergeUtils.getMergeByOrgId(id);
+        let result = await this.mergeUtils.getMergeByProjectId(id);
         if (result) {
             res.status(Constants.SUCCESS_CODE).json({ status: true, data: result });
         } else {
@@ -36,6 +36,10 @@ export class MergeController {
     };
 
     public addMerge = async (req: any, res: Response) => {
+        const isMergeExist = await this.mergeUtils.isMergeAlreadyExist(req.body.source_pid, req.body.destination_pid);
+        if (isMergeExist) {
+            return res.status(Constants.FAIL_CODE).json({ status: false, error: req.t('TEST_MERGE_ALREADY_EXIST') });
+        }
         const uuid = uuidv4();
         const projectObj = {
             id: uuid,
@@ -53,19 +57,17 @@ export class MergeController {
     };
 
     public updateProject = async (req: any, res: Response) => {
+        if (req.body.status > 2 || req.body.status < 1) {
+            return res.status(Constants.FAIL_CODE).json({ status: false, error: req.t('TEST_MERGE_INCORRECT_STATUS') });
+        }
         const updateMerge = {
-            status: req.body.status
+            status: req.body.status,
+            isDelete: req.body.is_delete || 0
         }
         await this.mergeUtils.updateMerge(updateMerge, req.params.id);
         let msg;
         if (updateMerge.status === 1) {
             msg = 'Merged successfully ';
-
-            let result = await this.mergeUtils.getMergeById(req.params.id);
-            const projectObjNew = {
-                isEnable: 0
-            }
-            await this.projectUtils.updateProject(result[0].source_pid, projectObjNew);
             res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
         } else {
 

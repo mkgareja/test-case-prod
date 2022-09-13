@@ -10,17 +10,20 @@ import {
   Validate,
 } from 'class-validator';
 
-import { Constants } from '../../config/constants';
 import { Model } from '../../model';
 
-export class ProjectModel extends Model {
+export class MergeModel extends Model {
 
   @IsNotEmpty()
-  public name: string;
+  public source_pid: string;
+  
+  @IsNotEmpty()
+  public destination_pid: string;
 
   constructor(body: any) {
     super();
-    const { name } = body;
-    this.name=name;
+    const { source_pid, destination_pid } = body;
+    this.source_pid = source_pid;
+    this.destination_pid = destination_pid;
   }
 }

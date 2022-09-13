@@ -10,8 +10,8 @@ export class MergeHelper {
         let projectIdListUnmerged = [];
         let successfulMergeIdList = [];
         result.forEach(r => {
-            if (r.status) {
-                successfulMergeIdList.push(r.id);
+            if (r.status === 1) {
+                successfulMergeIdList.push(r.mergeId);
             } else {
                 projectIdListUnmerged.push(r.source_pid, r.destination_pid);
             }
@@ -23,9 +23,9 @@ export class MergeHelper {
         if (successfulMergeIdList.length > 0) taskSubtaskMergedData = await this.getMergedSuccessfulData(successfulMergeIdList);
         result.forEach(resultItem => {
             let mergedData = [];
-            if (resultItem.status) {
-                if (taskSubtaskMergedData[resultItem.id]) {
-                    mergedData.push(taskSubtaskMergedData[resultItem.id]);
+            if (resultItem.status === 1) {
+                if (taskSubtaskMergedData[resultItem.mergeId]) {
+                    mergedData.push(taskSubtaskMergedData[resultItem.mergeId]);
                 }
             } else {
                 if (taskSubtaskUnmergedData[resultItem.source_pid]) {

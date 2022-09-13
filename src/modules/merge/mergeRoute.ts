@@ -3,10 +3,7 @@ import { Router } from 'express';
 import { Validator } from '../../validate';
 import { MergeController } from './mergeController';
 import { Middleware } from '../../middleware';
-
-import {
-    ProjectModel
-} from './mergeModel';
+import { MergeModel } from './mergeModel';
 
 // Assign router to the express.Router() instance
 const middleware = new Middleware();
@@ -14,9 +11,9 @@ const router: Router = Router();
 const v: Validator = new Validator();
 const mergeController = new MergeController();
 
-router.get('/:id',middleware.getUserAuthorized, mergeController.getMergeByOrg)
+router.get('/:id',middleware.getUserAuthorized, mergeController.getMergeByProjectId)
 router.get('/mid/:id',middleware.getUserAuthorized, mergeController.getMergeById)
-router.post('/',middleware.getUserAuthorized, mergeController.addMerge)
+router.post('/',middleware.getUserAuthorized, v.validate(MergeModel), mergeController.addMerge)
 router.post('/update/:id',middleware.getUserAuthorized, mergeController.updateProject)
 
 
