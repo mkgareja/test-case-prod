@@ -70,7 +70,7 @@ export class MergeUtils {
     const result = await mysql.updateFirst(Tables.MERGE, Info, `${TestMergeTable.ID} = ?`, [id]);
     if (result.affectedRows > 0) {
       const mergeData = await this.getMergeById(id);
-      if (Info.status === 1) {
+      if (Info.status === 1 || Info.status === 2) {
         await this.mergeHelper.copyTaskSubtask(mergeData);
       }
       return ResponseBuilder.data({ status: true, data: result });

@@ -10,12 +10,12 @@ export class MergeHelper {
         let projectIdListUnmerged = [];
         let successfulMergeIdList = [];
         result.forEach(r => {
-            if (r.status === 1) {
+            if (r.status === 1 || r.status === 2) {
                 successfulMergeIdList.push(r.mergeId);
             } else {
                 projectIdListUnmerged.push(r.source_pid, r.destination_pid);
             }
-        })
+        });
         const uniqueProjectIdsUnmerged = [...new Set(projectIdListUnmerged)];
         let taskSubtaskUnmergedData;
         let taskSubtaskMergedData;
