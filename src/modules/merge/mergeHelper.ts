@@ -23,7 +23,7 @@ export class MergeHelper {
         if (successfulMergeIdList.length > 0) taskSubtaskMergedData = await this.getMergedSuccessfulData(successfulMergeIdList);
         result.forEach(resultItem => {
             let mergedData = [];
-            if (resultItem.status === 1) {
+            if (resultItem.status === 1 || resultItem.status === 2) {
                 if (taskSubtaskMergedData[resultItem.mergeId]) {
                     mergedData.push(taskSubtaskMergedData[resultItem.mergeId]);
                 }
@@ -95,14 +95,26 @@ export class MergeHelper {
         return projectIdObj;
     }
 
-    public async copyTaskSubtask(mergeData: any) {
-        var mysqlTimestamp = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
+    public async copyTaskSubtaskResult(mergeData: any) {
+        const mysqlTimestamp = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
         const taskReplicateQuery = `INSERT INTO ${Tables.TASKRESULT}(taskid, projectid, resultid, status, modelId, data, title, createdAt) 
         SELECT id, '${mergeData[0].destination_pid}', '${mergeData[0].id}', status, modelId, data, title, '${mysqlTimestamp}' FROM tasks where isEnable = 1 and isDelete = 0 and projectid = ?`;
         await mysql.query(taskReplicateQuery, [mergeData[0].source_pid]);
 
         const subtaskReplicateQuery = `INSERT INTO ${Tables.SUBTASKRESULTS}(subtaskid, projectid, taskid, resultid, title, description, subid, summary, browser, os, testing, username, field, createdAt) 
         SELECT id, '${mergeData[0].destination_pid}', taskid, '${mergeData[0].id}', title, description, subid, summary, browser, os, testing, username, field, '${mysqlTimestamp}' from subtasks where isEnable = 1 and isDelete = 0 and projectid = ?`;
+        await mysql.query(subtaskReplicateQuery, [mergeData[0].source_pid]);
+        return;
+    }
+
+    public async copyTaskSubtasks(mergeData: any) {
+        const mysqlTimestamp = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
+        const taskReplicateQuery = `INSERT INTO ${Tables.TASKS}(id, projectid, status, modelId, data, title, createdAt) 
+        SELECT UUID(), '${mergeData[0].destination_pid}', status, modelId, data, title, '${mysqlTimestamp}' FROM tasks where isEnable = 1 and isDelete = 0 and projectid = ?`;
+        await mysql.query(taskReplicateQuery, [mergeData[0].source_pid]);
+
+        const subtaskReplicateQuery = `INSERT INTO ${Tables.SUBTASKS}(id, projectid, taskid, title, description, subid, summary, browser, os, testing, username, field, createdAt) 
+        SELECT UUID(), '${mergeData[0].destination_pid}', taskid, title, description, subid, summary, browser, os, testing, username, field, '${mysqlTimestamp}' from subtasks where isEnable = 1 and isDelete = 0 and projectid = ?`;
         await mysql.query(subtaskReplicateQuery, [mergeData[0].source_pid]);
         return;
     }
