@@ -6,13 +6,23 @@ export class TaskUtils {
    // Get User devices
    
   public async addTask(Details: Json): Promise<ResponseBuilder> {
-    const res = await mysql.insert(Tables.TASKS, Details);
-    return ResponseBuilder.data({ res:res, status : true });
+    try {
+      const res = await mysql.insert(Tables.TASKS, Details);
+      return ResponseBuilder.data({ res:res, status : true });
+    } catch (error) {
+      console.log("error in adding task: " + error);
+      return ResponseBuilder.data({status: false});
+    }
   }
 
   public async addSubTask(Details: Json): Promise<ResponseBuilder> {
-    const res = await mysql.insert(Tables.SUBTASKS, Details);
-    return ResponseBuilder.data({ res:res, status: true });
+    try {
+      const res = await mysql.insert(Tables.SUBTASKS, Details);
+      return ResponseBuilder.data({ res:res, status: true });
+    } catch (error) {
+      console.log("error in adding subtask: " + error);
+      return ResponseBuilder.data({status: false});
+    }
   }
 
   public async updateTask(id,Info): Promise<ResponseBuilder> {

@@ -35,8 +35,10 @@ export class ProjectController {
     }
     public getTask = async (req: any, res: Response) => {
         const { id = null } = req.params;
+        const page = req.query.page ? parseInt(req.query.page) : 1;
+        const pageSize = req.query.pageSize ? parseInt(req.query.pageSize) : 100;
         try {
-            let result = await this.projectUtils.getTask(id);
+            let result = await this.projectUtils.getTask(id, page, pageSize);
             res.status(Constants.SUCCESS_CODE).json(result);
         } catch (err) {
             console.log(`Error at getting task, error: ${err}`);
@@ -236,6 +238,21 @@ export class ProjectController {
         }
     }
 
+    public importTaskSubtask = async (req: any, res: Response) => {
+        const { projectid = null } = req.params;
+        const data = req.body.data;
+        if (data == undefined || data == null) {
+            const msg = req.t('IMPORT_INCORRECT_REQUEST');
+            res.status(Constants.FAIL_CODE).json({ code: 400, msg: msg, projectid: projectid });
+        }
+        let importRes = [];
+        for (const dataItem of data) {
+            const result = await this.projectUtils.insertTaskSubtask(dataItem, projectid);
+            importRes.push(result);
+        }
+        return res.status(Constants.SUCCESS_CODE).json(importRes);
+    }
+
     public updateField = async (req: any, res: Response) => {
         const { id = null } = req.params;
         const projectObj = {
@@ -253,7 +270,7 @@ export class ProjectController {
     public addTestRun = async (req: any, res: Response) => {
         const uuid = uuidv4();
         const { id = null } = req.params;
-        const tasks = await this.projectUtils.getTask(id);
+        const tasks = await this.projectUtils.getTask(id, 0, 18446744073709551615);
         if (!tasks.data[0]) {
             res.status(Constants.SUCCESS_CODE).json({ code: 400, msg: 'No test cases found' });
         } else {

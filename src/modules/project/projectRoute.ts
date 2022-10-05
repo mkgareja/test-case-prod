@@ -25,6 +25,7 @@ router.post('/remove/org/email',middleware.getUserAuthorized, projectController.
 router.post('/add/user',middleware.getUserAuthorized, projectController.addUserToProject);
 router.post('/remove/user',middleware.getUserAuthorized, projectController.removeUserToProject);
 router.post('/task/:id',middleware.getUserAuthorized, projectController.updateTask);
+router.post('/import/:projectid', middleware.getUserAuthorized, projectController.importTaskSubtask);
 router.post('/field/:id',middleware.getUserAuthorized, projectController.updateField);
 router.get('/task/:id',middleware.getUserAuthorized, projectController.getTask);
 router.post('/:id',middleware.getUserAuthorized, v.validate(ProjectModel), projectController.updateProject);

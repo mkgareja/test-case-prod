@@ -36,6 +36,7 @@
   "ERR_LOCATION_MAP": "Something wrong with given location. Please try other location.",
   "DEVICE_ENTRY_UPDATED": "Device information updated.",
   "DEVICE_NOT_REGISTERED": "Device not registered.",
+  "IMPORT_INCORRECT_REQUEST": "Bad request, please check the payload",
   "PROJECT_ADDED": "Project added successfully.",
   "TEST_RUN_ADDED": "Test run added successfully.",
   "TEST_RUN_SUBMITTED": "Test run submitted successfully",
