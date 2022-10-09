@@ -152,7 +152,7 @@ export class ProjectUtils {
       `p.${ProjectTable.DESC}`,
       `p.${ProjectTable.CREATED_AT}`,
       `pu.${projectUsersTable.ROLE}`,
-      `ROUND((LENGTH(p.${ProjectTable.DATA})- LENGTH(REPLACE(p.${ProjectTable.DATA}, '"id"', "") ))/LENGTH('"id"')) AS testCaseCount`,
+      `(SELECT count(*) FROM ${Tables.TASKS} t where t.${TaskTable.PID} = p.${ProjectTable.ID} AND t.${TaskTable.IS_ENABLE} = 1 AND t.${TaskTable.IS_DELETE} = 0) as testCaseCount`,
       `COUNT(pu.${projectUsersTable.ID}) as totalUser`,
       `(SELECT count(*) FROM ${Tables.MERGE} m where m.${TestMergeTable.DESTINATION_PID} = p.${ProjectTable.ID} AND ${TestMergeTable.STATUS}=0) as totalPendingRequest`,
       `u.${UserTable.FIRSTNAME}`
@@ -177,7 +177,7 @@ export class ProjectUtils {
         `p.${ProjectTable.CREATED_AT}`,
         `u.${UserTable.FIRSTNAME}`,
         `(SELECT count(*) FROM ${Tables.MERGE} m where m.${TestMergeTable.DESTINATION_PID} = p.${ProjectTable.ID} AND ${TestMergeTable.STATUS}=0) as totalPendingRequest`,
-        `ROUND((LENGTH(p.${ProjectTable.DATA})- LENGTH(REPLACE(p.${ProjectTable.DATA}, '"id"', "") ))/LENGTH('"id"')) AS testCaseCount`,
+        `(SELECT count(*) FROM ${Tables.TASKS} t where t.${TaskTable.PID} = p.${ProjectTable.ID} AND t.${TaskTable.IS_ENABLE} = 1 AND t.${TaskTable.IS_DELETE} = 0) as testCaseCount`,
         `COUNT(pu.${projectUsersTable.ID}) as totalUser`,
         `MAX(pu.${projectUsersTable.ROLE}) as role`,
       ],
