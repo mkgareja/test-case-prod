@@ -14,6 +14,24 @@ export class ProjectUtils {
     const newDevice = await mysql.insert(Tables.PROJECT, projectDetails);
     return ResponseBuilder.data({ newDevice:newDevice });
   }
+
+  public async projectNameExist(name: String) {
+    const result = await mysql.findAll(`${Tables.PROJECT} p`, [`p.${ProjectTable.ID}`],`p.${ProjectTable.NAME} = ?`, [name]);
+    if (result.length > 0) {
+      return true;
+    }
+    return false;
+  }
+
+  public async updateProjectName(projectDetails: Json, pid: any): Promise<ResponseBuilder> {
+    const result = await mysql.update(Tables.PROJECT, projectDetails, `${ProjectTable.ID} = ?`, [pid]);
+    if (result.affectedRows > 0) {
+      return ResponseBuilder.data({ status: true, data: result });
+    } else {
+      return ResponseBuilder.data({ status: false });
+    }
+  }
+
   public async addProjectUsers(projectDetails: Json): Promise<ResponseBuilder> {
     const newDevice = await mysql.insert(Tables.PROJECTUSERS, projectDetails);
     return ResponseBuilder.data({ newDevice:newDevice });

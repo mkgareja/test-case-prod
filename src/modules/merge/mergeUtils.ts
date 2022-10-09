@@ -67,19 +67,15 @@ export class MergeUtils {
   }
 
   public async updateMerge(Info: { status: any; isDelete?: any; }, id: any): Promise<ResponseBuilder> {
-    const result = await mysql.updateFirst(Tables.MERGE, Info, `${TestMergeTable.ID} = ?`, [id]);
-    if (result.affectedRows > 0) {
-      const mergeData = await this.getMergeById(id);
-      if (Info.status === 1) {
-        await this.mergeHelper.copyTaskSubtaskResult(mergeData);
-        await this.mergeHelper.copyTaskSubtasks(mergeData);
-      } else if (Info.status === 2) {
-        await this.mergeHelper.copyTaskSubtaskResult(mergeData);
-      }
-      return ResponseBuilder.data({ status: true, data: result });
-    } else {
-      return ResponseBuilder.data({ status: false });
+    const mergeData = await this.getMergeById(id);
+    if (Info.status === 1) {
+      await this.mergeHelper.copyTaskSubtaskResult(mergeData);
+      await this.mergeHelper.copyTaskSubtasks(mergeData);
+    } else if (Info.status === 2) {
+      await this.mergeHelper.copyTaskSubtaskResult(mergeData);
     }
+    const result = await mysql.updateFirst(Tables.MERGE, Info, `${TestMergeTable.ID} = ?`, [id]);
+    return ResponseBuilder.data({ status: true, data: result });
   }
 
   public async isMergeAlreadyExist(source_pid: String, destination_pid: String): Promise<Boolean> {

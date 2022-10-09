@@ -68,6 +68,29 @@ export class ProjectController {
         const msg = req.t('PROJECT_ADDED');
         res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg, data: result.result.newDevice, projectid: uuid });
     };
+
+    public updateProjectName = async (req: any, res: Response) => {
+        const { id = null } = req.params;
+        const newName = req.body.name;
+        const isProjectNameExist = await this.projectUtils.projectNameExist(newName);
+        if (isProjectNameExist) {
+            const msg = req.t('PROJECT_NAME_ALREADY_EXIST');
+            return res.status(Constants.FAIL_CODE).json({ code: 400, msg: msg });
+        }
+        var re = /^[a-zA-Z0-9-_]*$/;
+        if (re.test(newName)) {
+            const projectObj = {
+                name: newName
+            }
+            const result = await this.projectUtils.updateProjectName(projectObj, id);
+            const msg = req.t('PROJECT_NAME_UPDATE_SUCCESSFUL');
+            return res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg, data: result });
+        } else {
+            const msg = req.t('INVALID_PROJECT_NAME');
+            return res.status(Constants.FAIL_CODE).json({ code: 400, msg: msg });
+        }
+    }
+
     public addUserToProject = async (req: any, res: Response) => {
         const uuid2 = uuidv4();
         const projectObjnew = {
