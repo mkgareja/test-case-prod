@@ -195,25 +195,48 @@ export class ProjectUtils {
   }
 
   private async getTaskResponse(result: any) {
-    result.forEach((x: { field: string; }) => {
-      x.field = JSON.parse(x.field);
-    });
-    const hash = result.reduce((p: { [x: string]: any[]; },c: { taskId: string | number; }) => (p[c.taskId] ? p[c.taskId].push(c) : p[c.taskId] = [c],p), {});
-    const taskGroupedBy = Object.keys(hash).map(k => ({ taskTitle: hash[k][0].taskTitle, id: hash[k][0].taskId, lists: hash[k] }));
+    let taskList = {};
+    let uniqueTaskList = {};
+    for(const taskItem in result) {
+      result[taskItem].field = JSON.parse(result[taskItem].field);
+      const taskId = result[taskItem].taskId;
+      if (!(taskId in uniqueTaskList)) {
+        uniqueTaskList[taskId] = {
+          taskId: taskId,
+          taskTitle: result[taskItem].taskTitle
+        };
+      }
+      if (!(taskId in taskList)) {
+        taskList[taskId] = [];
+      }
+      if (result[taskItem].subtaskId != null) {
+        taskList[taskId].push(result[taskItem]);
+      }
+    };
+    let taskGroupedBy = [];
+    for (let taskObj in uniqueTaskList) {
+      taskGroupedBy.push({
+        id: uniqueTaskList[taskObj].taskId, 
+        taskTitle: uniqueTaskList[taskObj].taskTitle, 
+        lists: taskList[uniqueTaskList[taskObj].taskId]
+      });
+    }
     return { status: true, data: taskGroupedBy };
   }
 
   public async getTask(id: any, page: number, pageSize: number) {
     const result = await mysql.findAll(
-      `${Tables.PROJECT} p INNER JOIN ${Tables.TASKS} t on t.${TaskTable.PID}=p.${ProjectTable.ID}
-      LEFT JOIN ${Tables.SUBTASKS} as st on t.${TaskTable.ID}=st.${SubTaskTable.TID}`,
+      `${Tables.PROJECT} p 
+      INNER JOIN ${Tables.TASKS} t on t.${TaskTable.PID}=p.${ProjectTable.ID}
+      LEFT JOIN ${Tables.SUBTASKS} as st on st.${SubTaskTable.TID} = t.${TaskTable.ID} AND st.${SubTaskTable.IS_ENABLE} = 1
+      AND st.${SubTaskTable.IS_DELETE} = 0`,
       [
         `IFNULL(st.${SubTaskTable.FIELD}, p.${ProjectTable.FIELD}) as field, t.${TaskTable.TITLE} as taskTitle, t.${TaskTable.ID} as taskId,
         st.${SubTaskTable.ID} as subtaskId, st.${SubTaskTable.SUB_ID}, st.${SubTaskTable.OS}, st.${SubTaskTable.TITLE} as subTaskTitle, st.${SubTaskTable.BROWSER}, 
         st.${SubTaskTable.SUMMARY}, st.${SubTaskTable.TESTING}, st.${SubTaskTable.USERNAME}, st.${SubTaskTable.DESC}`
       ],
-      `t.${TaskTable.IS_DELETE} = 0 AND t.${TaskTable.IS_ENABLE} = 1 AND t.${TaskTable.PID} = ? AND st.${SubTaskTable.IS_ENABLE} = 1
-        AND st.${SubTaskTable.IS_DELETE} = 0 ORDER BY t.${SubTaskTable.CREATED_AT} DESC LIMIT ${page},${pageSize}`, [id]
+      `t.${TaskTable.IS_DELETE} = 0 AND t.${TaskTable.IS_ENABLE} = 1 AND t.${TaskTable.PID} = ?
+      ORDER BY t.${SubTaskTable.CREATED_AT} DESC LIMIT ${page},${pageSize}`, [id]
     );
     const taskResponse = await this.getTaskResponse(result);
     return taskResponse;

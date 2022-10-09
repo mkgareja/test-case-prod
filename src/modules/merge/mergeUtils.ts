@@ -66,6 +66,11 @@ export class MergeUtils {
     return ResponseBuilder.data({ newDevice:newDevice });
   }
 
+  public async getMergeStatus(mergeId: string) {
+    const result = await mysql.first(`${Tables.MERGE} m`, [`m.${TestMergeTable.STATUS}`],`m.${TestMergeTable.ID} = ?`, [mergeId]);
+    return result.status;
+  }
+
   public async updateMerge(Info: { status: any; isDelete?: any; }, id: any): Promise<ResponseBuilder> {
     const mergeData = await this.getMergeById(id);
     if (Info.status === 1) {

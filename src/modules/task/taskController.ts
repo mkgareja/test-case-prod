@@ -45,13 +45,14 @@ export class TaskController {
             projectid: body.projectid,
             taskid: body.taskid,
             title: body.title,
-            subid: body.details.subid,
-            description: body.details.description,
-            summary: body.details.summary,
-            browser: body.details.browser,
-            os: body.details.os,
+            subid: body.details.subid || null,
+            description: body.details.description || null,
+            summary: body.details.summary || null,
+            browser: body.details.browser || null,
+            os: body.details.os || null,
             testing: body.details.testing || 'manual',
-            username: body.details.username
+            username: body.details.username,
+            field: null
         };
         if (body.details.field != undefined && body.details.field.length != 0) {
             infoObj.field = JSON.stringify(body.details.field);
