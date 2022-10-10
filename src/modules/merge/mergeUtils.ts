@@ -71,7 +71,7 @@ export class MergeUtils {
     return result.status;
   }
 
-  public async updateMerge(Info: { status: any; isDelete?: any; }, id: any): Promise<ResponseBuilder> {
+  public async updateMerge(Info: { status: any; isDelete?: any; reject_reason?: any; }, id: any): Promise<ResponseBuilder> {
     const mergeData = await this.getMergeById(id);
     if (Info.status === 1) {
       await this.mergeHelper.copyTaskSubtaskResult(mergeData);

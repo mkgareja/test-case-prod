@@ -67,7 +67,8 @@ export class MergeController {
         }
         const updateMerge = {
             status: req.body.status,
-            isDelete: req.body.is_delete || 0
+            isDelete: req.body.is_delete || 0,
+            reject_reason: req.body.rejectMsg || null
         }
         await this.mergeUtils.updateMerge(updateMerge, req.params.id);
         if (updateMerge.status === 1) {
