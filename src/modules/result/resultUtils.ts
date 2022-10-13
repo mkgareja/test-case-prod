@@ -17,7 +17,7 @@ export class ResultUtils {
         return ResponseBuilder.data({ res:result, status : true });
     }
 
-    public async updateSubtaskResult(id, Info): Promise<ResponseBuilder> {
+    public async updateSubtaskResult(id: any, Info: { testStatus: any; }): Promise<ResponseBuilder> {
         const result = await mysql.updateFirst(Tables.SUBTASKRESULTS, Info, `${SubtaskResultsTable.ID} = ?`, [id]);
         if (result.affectedRows > 0) {  
           return ResponseBuilder.data({ status: true, res: result });
@@ -52,7 +52,7 @@ export class ResultUtils {
         GROUP BY sr.${SubtaskResultsTable.TESTSTATUS}`;
         const result = await mysql.query(query, [projectId]);
         let res = {};
-        result.forEach(x => {
+        result.forEach((x: { testStatus: string | number; count: any; }) => {
             res[x.testStatus] = x.count;
         })
         return res;
@@ -63,7 +63,7 @@ export class ResultUtils {
         WHERE sr.${SubtaskResultsTable.RID} = ? GROUP BY sr.${SubtaskResultsTable.TESTSTATUS}`
         const result = await mysql.query(query, [resultId]);
         let res = {};
-        result.forEach(x => {
+        result.forEach((x: { testStatus: string | number; count: any; }) => {
             res[x.testStatus] = x.count;
         })
         return res;

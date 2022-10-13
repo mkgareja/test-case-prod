@@ -17,6 +17,7 @@ const projectController = new ProjectController();
 router.get('/',middleware.getUserAuthorized, projectController.getProject)
 router.get('/org/user/:oid',middleware.getUserAuthorized, projectController.getOrgUsersInvited)
 router.post('/',middleware.getUserAuthorized, v.validate(ProjectModel), projectController.addProject);
+router.post('/name/:id', middleware.getUserAuthorized, projectController.updateProjectName);
 router.post('/invite',middleware.getUserAuthorized, projectController.inviteInProject);
 router.post('/email',middleware.getUserAuthorized, projectController.sendTestRunEmail);
 router.get('/org/email/:id',middleware.getUserAuthorized, projectController.getOrgEmail);
@@ -25,6 +26,7 @@ router.post('/remove/org/email',middleware.getUserAuthorized, projectController.
 router.post('/add/user',middleware.getUserAuthorized, projectController.addUserToProject);
 router.post('/remove/user',middleware.getUserAuthorized, projectController.removeUserToProject);
 router.post('/task/:id',middleware.getUserAuthorized, projectController.updateTask);
+router.post('/import/:projectid', middleware.getUserAuthorized, projectController.importTaskSubtask);
 router.post('/field/:id',middleware.getUserAuthorized, projectController.updateField);
 router.get('/task/:id',middleware.getUserAuthorized, projectController.getTask);
 router.post('/:id',middleware.getUserAuthorized, v.validate(ProjectModel), projectController.updateProject);

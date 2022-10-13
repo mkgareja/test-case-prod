@@ -66,20 +66,21 @@ export class MergeUtils {
     return ResponseBuilder.data({ newDevice:newDevice });
   }
 
-  public async updateMerge(Info: { status: any; isDelete?: any; }, id: any): Promise<ResponseBuilder> {
-    const result = await mysql.updateFirst(Tables.MERGE, Info, `${TestMergeTable.ID} = ?`, [id]);
-    if (result.affectedRows > 0) {
-      const mergeData = await this.getMergeById(id);
-      if (Info.status === 1) {
-        await this.mergeHelper.copyTaskSubtaskResult(mergeData);
-        await this.mergeHelper.copyTaskSubtasks(mergeData);
-      } else if (Info.status === 2) {
-        await this.mergeHelper.copyTaskSubtaskResult(mergeData);
-      }
-      return ResponseBuilder.data({ status: true, data: result });
-    } else {
-      return ResponseBuilder.data({ status: false });
+  public async getMergeStatus(mergeId: string) {
+    const result = await mysql.first(`${Tables.MERGE} m`, [`m.${TestMergeTable.STATUS}`],`m.${TestMergeTable.ID} = ?`, [mergeId]);
+    return result.status;
+  }
+
+  public async updateMerge(Info: { status: any; isDelete?: any; reject_reason?: any; }, id: any): Promise<ResponseBuilder> {
+    const mergeData = await this.getMergeById(id);
+    if (Info.status === 1) {
+      await this.mergeHelper.copyTaskSubtaskResult(mergeData);
+      await this.mergeHelper.copyTaskSubtasks(mergeData);
+    } else if (Info.status === 2) {
+      await this.mergeHelper.copyTaskSubtaskResult(mergeData);
     }
+    const result = await mysql.updateFirst(Tables.MERGE, Info, `${TestMergeTable.ID} = ?`, [id]);
+    return ResponseBuilder.data({ status: true, data: result });
   }
 
   public async isMergeAlreadyExist(source_pid: String, destination_pid: String): Promise<Boolean> {

@@ -60,14 +60,19 @@ export class MergeController {
         if (req.body.status > 2 || req.body.status < 1) {
             return res.status(Constants.FAIL_CODE).json({ status: false, error: req.t('TEST_MERGE_INCORRECT_STATUS') });
         }
+        const currentStatus = await this.mergeUtils.getMergeStatus(req.params.id);
+        if (currentStatus == req.body.status) {
+            const msg = req.t('MERGE_STATUS_ALREADY_UPDATED');
+            return res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
+        }
         const updateMerge = {
             status: req.body.status,
-            isDelete: req.body.is_delete || 0
+            isDelete: req.body.is_delete || 0,
+            reject_reason: req.body.rejectMsg || null
         }
         await this.mergeUtils.updateMerge(updateMerge, req.params.id);
-        let msg;
         if (updateMerge.status === 1) {
-            msg = 'Merged successfully ';
+            const msg = req.t('MERGE_SUCCESSFUL');
             res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
         } else {
 
@@ -75,7 +80,7 @@ export class MergeController {
             // const { name, email } = req.body;
             // await this.authUtils.sendContactEmail(name, email, msg );
 
-            msg = 'Request rejected successfully';
+            const msg = req.t('MERGE_REJECTED');
             res.status(Constants.SUCCESS_CODE).json({ code: 200, msg: msg });
         }
 
