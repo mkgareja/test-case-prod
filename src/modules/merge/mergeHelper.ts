@@ -3,13 +3,14 @@ import * as moment from 'moment';
 import { Tables, SubTaskTable, ProjectTable, TaskTable, TaskResultTable, SubtaskResultsTable, TestMergeTable } from '../../config/tables';
 import { ProjectUtils } from '../project/projectUtils';
 import { v4 as uuidv4 } from 'uuid';
+import { Constants } from '../../config/constants';
 
 
 export class MergeHelper {
 
     private projectUtils: ProjectUtils = new ProjectUtils();
 
-    public async getMergeResult(result: any) {
+    public async getMergeResult(result: any, offset: number, pageSize: number) {
         if (!result || result.length <= 0) return result; 
         let projectIdListUnmerged = [];
         let successfulMergeIdList = [];
@@ -23,8 +24,8 @@ export class MergeHelper {
         const uniqueProjectIdsUnmerged = [...new Set(projectIdListUnmerged)];
         let taskSubtaskUnmergedData;
         let taskSubtaskMergedData;
-        if (projectIdListUnmerged.length > 0) taskSubtaskUnmergedData = await this.getTaskSubtaskUnmergedData(uniqueProjectIdsUnmerged);
-        if (successfulMergeIdList.length > 0) taskSubtaskMergedData = await this.getMergedSuccessfulData(successfulMergeIdList);
+        if (projectIdListUnmerged.length > 0) taskSubtaskUnmergedData = await this.getTaskSubtaskUnmergedData(uniqueProjectIdsUnmerged, offset, pageSize);
+        if (successfulMergeIdList.length > 0) taskSubtaskMergedData = await this.getMergedSuccessfulData(successfulMergeIdList, offset, pageSize);
         result.forEach(resultItem => {
             let mergedData = [];
             if (resultItem.status === 1 || resultItem.status === 2) {
@@ -44,7 +45,7 @@ export class MergeHelper {
         return result;
     }
 
-    public async getTaskSubtaskUnmergedData(uniqueProjectIds: any[]) {
+    public async getTaskSubtaskUnmergedData(uniqueProjectIds: any[], offset: number, pageSize: number) {
         const result = await mysql.findAll(
             `${Tables.PROJECT} p INNER JOIN ${Tables.TASKS} t on t.${TaskTable.PID}=p.${ProjectTable.ID}
             LEFT JOIN ${Tables.SUBTASKS} as st on t.${TaskTable.ID}=st.${SubTaskTable.TID}`,
@@ -54,7 +55,7 @@ export class MergeHelper {
               st.${SubTaskTable.BROWSER}, st.${SubTaskTable.SUMMARY}, st.${SubTaskTable.TESTING}, st.${SubTaskTable.USERNAME}, st.${SubTaskTable.DESC}`
             ],
             `t.${TaskTable.IS_DELETE} = 0 AND t.${TaskTable.IS_ENABLE} = 1 AND t.${TaskTable.PID} in (?) AND st.${SubTaskTable.IS_ENABLE} = 1
-              AND st.${SubTaskTable.IS_DELETE} = 0 ORDER BY t.${SubTaskTable.CREATED_AT} DESC`, [uniqueProjectIds]
+              AND st.${SubTaskTable.IS_DELETE} = 0 ORDER BY t.${SubTaskTable.CREATED_AT} DESC LIMIT ${offset},${pageSize}`, [uniqueProjectIds]
         );
         let projectIdObj = {};
         uniqueProjectIds.forEach(x => projectIdObj[x] = []);
@@ -71,7 +72,7 @@ export class MergeHelper {
         return projectIdObj;
     }
 
-    public async getMergedSuccessfulData(uniqueMergeIds: any[]) {
+    public async getMergedSuccessfulData(uniqueMergeIds: any[], offset: number, pageSize: number) {
         const result = await mysql.findAll(
             `${Tables.SUBTASKRESULTS} sr
             LEFT JOIN ${Tables.TASKRESULT} t on t.${TaskResultTable.TID}=sr.${SubtaskResultsTable.TID}
@@ -82,7 +83,8 @@ export class MergeHelper {
               sr.${SubtaskResultsTable.BROWSER}, sr.${SubtaskResultsTable.SUMMARY}, sr.${SubtaskResultsTable.TESTING}, sr.${SubtaskResultsTable.USERNAME}, sr.${SubtaskResultsTable.DESC}, 
               sr.${SubtaskResultsTable.ID} as subtaskResultId, sr.${SubtaskResultsTable.TESTSTATUS}`
             ],
-            `sr.${SubtaskResultsTable.RID} in (?) GROUP BY sr.${SubtaskResultsTable.ID} ORDER BY sr.${SubtaskResultsTable.CREATED_AT} DESC`, [uniqueMergeIds]
+            `sr.${SubtaskResultsTable.RID} in (?) GROUP BY sr.${SubtaskResultsTable.ID} 
+            ORDER BY sr.${SubtaskResultsTable.CREATED_AT} DESC LIMIT ${offset},${pageSize}`, [uniqueMergeIds]
         );
         let projectIdObj = {};
         uniqueMergeIds.forEach(x => projectIdObj[x] = []);
@@ -113,7 +115,7 @@ export class MergeHelper {
 
     public async copyTaskSubtasks(mergeData: any) {
         const mysqlTimestamp = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
-        const taskSubtasks = await this.projectUtils.getTask(mergeData[0].source_pid, 0, 1844674407370955161);
+        const taskSubtasks = await this.projectUtils.getTask(mergeData[0].source_pid, 0, Constants.PAGTNATION_MAX_PAGE_SIZE);
         const taskSubtasksData = taskSubtasks.data;
         for (const taskObj in taskSubtasksData) {
             taskSubtasksData[taskObj].uuid = uuidv4();

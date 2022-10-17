@@ -2,13 +2,14 @@ import * as mysql from 'jm-ez-mysql';
 import { ResponseBuilder } from '../../helpers/responseBuilder';
 import { MergeHelper } from './mergeHelper';
 import { SendEmail } from '../../helpers/sendEmail';
+import { Constants } from '../../config/constants';
 import { Tables,TestMergeTable ,UserTable, ProjectTable } from '../../config/tables';
 
 export class MergeUtils {
   private mergeHelper: MergeHelper = new MergeHelper();
 
 
-  public async getMergeByProjectId(id: any) {
+  public async getMergeByProjectId(id: any, offset: number, pageSize: number) {
     const result = await mysql.findAll(
       `${Tables.MERGE} m
       LEFT JOIN ${Tables.USER} as u on m.${TestMergeTable.USERID}=u.${UserTable.ID}
@@ -26,7 +27,8 @@ export class MergeUtils {
       `u.${UserTable.FIRSTNAME} as createdByFirstname`,
       `cu.${UserTable.FIRSTNAME} as changedByFirstname`,
       `ps.${ProjectTable.NAME} as sourceProjectName`,
-      `pd.${ProjectTable.NAME} as destinationProjectName`],`m.${TestMergeTable.IS_DELETE} = 0 AND m.${TestMergeTable.IS_ENABLE} = 1 and pd.${ProjectTable.ID} = ?`,[id]);
+      `pd.${ProjectTable.NAME} as destinationProjectName`],`m.${TestMergeTable.IS_DELETE} = 0 
+      AND m.${TestMergeTable.IS_ENABLE} = 1 and pd.${ProjectTable.ID} = ? LIMIT ${offset},${pageSize}`,[id]);
     if (result.length >= 0) {
       return result;
     } else {
@@ -34,7 +36,7 @@ export class MergeUtils {
     }
   }
 
-  public async getMergeById(id: any) {
+  public async getMergeById(id: any, offset: number, pageSize: number) {
     const result = await mysql.findAll(
       `${Tables.MERGE} m
       LEFT JOIN ${Tables.USER} as u on m.${TestMergeTable.USERID}=u.${UserTable.ID}
@@ -52,8 +54,9 @@ export class MergeUtils {
       `u.${UserTable.FIRSTNAME} as createdByFirstname`,
       `cu.${UserTable.FIRSTNAME} as changedByFirstname`,
       `ps.${ProjectTable.NAME} as sourceProjectName`,
-      `pd.${ProjectTable.NAME} as destinamtionProjectName`],`m.${TestMergeTable.IS_DELETE} = 0 AND m.${TestMergeTable.IS_ENABLE} = 1 and m.${TestMergeTable.ID} = ?`,[id]);
-    const getMergeData = await this.mergeHelper.getMergeResult(result);
+      `pd.${ProjectTable.NAME} as destinamtionProjectName`],`m.${TestMergeTable.IS_DELETE} = 0 AND m.${TestMergeTable.IS_ENABLE} = 1 
+      and m.${TestMergeTable.ID} = ?`,[id]);
+    const getMergeData = await this.mergeHelper.getMergeResult(result, offset, pageSize);
     if (getMergeData.length > 0) {
       return getMergeData;
     } else {
@@ -72,7 +75,7 @@ export class MergeUtils {
   }
 
   public async updateMerge(Info: { status: any; isDelete?: any; reject_reason?: any; }, id: any): Promise<ResponseBuilder> {
-    const mergeData = await this.getMergeById(id);
+    const mergeData = await this.getMergeById(id, 0, Constants.PAGTNATION_MAX_PAGE_SIZE);
     if (Info.status === 1) {
       await this.mergeHelper.copyTaskSubtaskResult(mergeData);
       await this.mergeHelper.copyTaskSubtasks(mergeData);

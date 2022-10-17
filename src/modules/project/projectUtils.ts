@@ -142,7 +142,7 @@ export class ProjectUtils {
     return infoObj;
 }
 
-  public async getProjects(id: any) {
+  public async getProjects(id: any, offset: number, pageSize: number) {
     const result =  await mysql.findAll(`${Tables.PROJECT} p
         LEFT JOIN ${Tables.PROJECTUSERS} pu on p.${ProjectTable.ID} = pu.${projectUsersTable.PROJECTID}
         LEFT JOIN ${Tables.USER} u on u.${UserTable.ID} = pu.${projectUsersTable.USERID}`,[
@@ -157,15 +157,15 @@ export class ProjectUtils {
       `(SELECT count(*) FROM ${Tables.MERGE} m where m.${TestMergeTable.DESTINATION_PID} = p.${ProjectTable.ID} AND ${TestMergeTable.STATUS}=0) as totalPendingRequest`,
       `u.${UserTable.FIRSTNAME}`
     ],
-      `p.${ProjectTable.IS_DELETE} = 0 AND p.${ProjectTable.IS_ENABLE} = 1 AND  pu.${projectUsersTable.USERID} = ? GROUP BY p.${ProjectTable.ID},pu.${projectUsersTable.ROLE} ORDER BY p.${ProjectTable.CREATED_AT} DESC`,
-      [id]);
+      `p.${ProjectTable.IS_DELETE} = 0 AND p.${ProjectTable.IS_ENABLE} = 1 AND  pu.${projectUsersTable.USERID} = ? GROUP BY p.${ProjectTable.ID},pu.${projectUsersTable.ROLE} 
+      ORDER BY p.${ProjectTable.CREATED_AT} DESC LIMIT ${offset},${pageSize}`, [id]);
     if (result.length >= 0) {
       return result;
     } else {
       return false;
     }
   }
-  public async getProjectsByOrg(id: any) {
+  public async getProjectsByOrg(id: any, offset: number, pageSize: number) {
     try {
       const result =  await mysql.findAll(`${Tables.PROJECT} p
       LEFT JOIN ${Tables.PROJECTUSERS} pu on p.${ProjectTable.ID} = pu.${projectUsersTable.PROJECTID}
@@ -181,8 +181,8 @@ export class ProjectUtils {
         `COUNT(pu.${projectUsersTable.ID}) as totalUser`,
         `MAX(pu.${projectUsersTable.ROLE}) as role`,
       ],
-        `p.${ProjectTable.IS_DELETE} = 0 AND p.${ProjectTable.IS_ENABLE} = 1 AND  pu.${projectUsersTable.ORGID} = ? GROUP BY p.${ProjectTable.ID} ORDER BY p.${ProjectTable.CREATED_AT} DESC`,
-        [id]);
+        `p.${ProjectTable.IS_DELETE} = 0 AND p.${ProjectTable.IS_ENABLE} = 1 AND  pu.${projectUsersTable.ORGID} = ? GROUP BY p.${ProjectTable.ID} 
+        ORDER BY p.${ProjectTable.CREATED_AT} DESC LIMIT ${offset},${pageSize}`, [id]);
       if (result.length >= 0) {
         return result;
       } else {
@@ -224,20 +224,20 @@ export class ProjectUtils {
     return { status: true, data: taskGroupedBy };
   }
 
-  public async getTask(id: any, page: number, pageSize: number) {
+  public async getTask(id: any, offset: number, pageSize: number) {
     const result = await mysql.findAll(
       `${Tables.PROJECT} p 
       INNER JOIN ${Tables.TASKS} t on t.${TaskTable.PID}=p.${ProjectTable.ID}
-      LEFT JOIN ${Tables.SUBTASKS} as st on st.${SubTaskTable.TID} = t.${TaskTable.ID} AND st.${SubTaskTable.IS_ENABLE} = 1
-      AND st.${SubTaskTable.IS_DELETE} = 0`,
+      LEFT JOIN ${Tables.SUBTASKS} as st on st.${SubTaskTable.TID} = t.${TaskTable.ID} AND st.${SubTaskTable.IS_ENABLE} = 1 AND st.${SubTaskTable.IS_DELETE} = 0`,
       [
         `IFNULL(st.${SubTaskTable.FIELD}, p.${ProjectTable.FIELD}) as field, t.${TaskTable.TITLE} as taskTitle, t.${TaskTable.ID} as taskId,
         st.${SubTaskTable.ID} as subtaskId, st.${SubTaskTable.SUB_ID}, st.${SubTaskTable.OS}, st.${SubTaskTable.TITLE} as subTaskTitle, st.${SubTaskTable.BROWSER}, 
         st.${SubTaskTable.SUMMARY}, st.${SubTaskTable.TESTING}, st.${SubTaskTable.USERNAME}, st.${SubTaskTable.DESC}`
       ],
       `t.${TaskTable.IS_DELETE} = 0 AND t.${TaskTable.IS_ENABLE} = 1 AND t.${TaskTable.PID} = ?
-      ORDER BY t.${SubTaskTable.CREATED_AT} DESC LIMIT ${page},${pageSize}`, [id]
+      ORDER BY t.${SubTaskTable.CREATED_AT} DESC LIMIT ${offset},${pageSize}`, [id]
     );
+    console.log(mysql.query);
     const taskResponse = await this.getTaskResponse(result);
     return taskResponse;
   }
@@ -310,14 +310,14 @@ export class ProjectUtils {
     return testRunResponse;
   }
 
-  public async getTestRuns(id: any) {
+  public async getTestRuns(id: any, offset: number, pageSize: number) {
     const result = await mysql.findAll(
       `${Tables.RESULT} r
       LEFT JOIN ${Tables.USER} as u on r.${ResultTable.USERID}=u.${UserTable.ID}`,
       [
         `r.${ResultTable.ID}, r.${ResultTable.DESC}, r.${ResultTable.CREATED_AT}, r.${ResultTable.NAME}, u.${UserTable.FIRSTNAME}`
       ],
-      `r.${ResultTable.IS_DELETE} = 0 and r.${ResultTable.PID} = ? ORDER BY r.${ResultTable.CREATED_AT} DESC`, [id]);
+      `r.${ResultTable.IS_DELETE} = 0 and r.${ResultTable.PID} = ? ORDER BY r.${ResultTable.CREATED_AT} DESC LIMIT ${offset},${pageSize}`, [id]);
     if (result.length >= 0) {
       return result;
     } else {
@@ -372,12 +372,12 @@ export class ProjectUtils {
     return resultArray;
   }
 
-  public async getTestRunsAnalytics(id: any, limit: any) {
+  public async getTestRunsAnalytics(id: any, offset: number, pageSize: number) {
     const result = await mysql.findAll(
       `${Tables.RESULT} r
       LEFT JOIN ${Tables.SUBTASKRESULTS} sr on sr.${SubtaskResultsTable.RID}=r.${ResultTable.ID}
       INNER JOIN (SELECT id FROM ${Tables.RESULT} r WHERE r.${ResultTable.IS_DELETE} = 0 and r.${ResultTable.IS_PROCESSED} = 1 and r.${ResultTable.PID} = '${id}' 
-      ORDER BY r.${ResultTable.CREATED_AT} DESC LIMIT ${limit}) as r2 ON r2.${ResultTable.ID}=r.${ResultTable.ID}`,
+      ORDER BY r.${ResultTable.CREATED_AT} DESC LIMIT ${offset},${pageSize}) as r2 ON r2.${ResultTable.ID}=r.${ResultTable.ID}`,
       [
         `r.${ResultTable.ID}, r.${ResultTable.CREATED_AT}, sr.${SubtaskResultsTable.TESTING}, sr.${SubtaskResultsTable.TESTSTATUS}, r.${ResultTable.IS_AUTOMATED}`
       ]);
