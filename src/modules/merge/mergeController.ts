@@ -16,8 +16,11 @@ export class MergeController {
 
     public getMergeByProjectId = async (req: any, res: Response) => {
         const { id = null } = req.params;
+        const pageNum = req.query.page ? parseInt(req.query.page) > 0 ? parseInt(req.query.page) - 1 : 0 : Constants.PAGINATION_PAGE_NUM;
+        const pageSize = req.query.pageSize ? parseInt(req.query.pageSize) : Constants.PAGINATION_PAGE_SIZE;
+        const offset = pageNum * pageSize;
         // const { limit = null } = req.params;
-        let result = await this.mergeUtils.getMergeByProjectId(id);
+        let result = await this.mergeUtils.getMergeByProjectId(id, offset, pageSize);
         if (result) {
             res.status(Constants.SUCCESS_CODE).json({ status: true, data: result });
         } else {
@@ -27,7 +30,10 @@ export class MergeController {
 
     public getMergeById = async (req: any, res: Response) => {
         const { id = null } = req.params;
-        let result = await this.mergeUtils.getMergeById(id);
+        const pageNum = req.query.page ? parseInt(req.query.page) > 0 ? parseInt(req.query.page) - 1 : 0 : Constants.PAGINATION_PAGE_NUM;
+        const pageSize = req.query.pageSize ? parseInt(req.query.pageSize) : Constants.PAGINATION_PAGE_SIZE;
+        const offset = pageNum * pageSize;
+        let result = await this.mergeUtils.getMergeById(id, offset, pageSize);
         if (result) {
             res.status(Constants.SUCCESS_CODE).json({ status: true, data: result });
         } else {

@@ -13,11 +13,14 @@ export class ProjectController {
     private projectUtils: ProjectUtils = new ProjectUtils();
     private resultUtils: ResultUtils = new ResultUtils();
     public getProject = async (req: any, res: Response) => {
+        const pageNum = req.query.page ? parseInt(req.query.page) > 0 ? parseInt(req.query.page) - 1 : 0 : Constants.PAGINATION_PAGE_NUM;
+        const pageSize = req.query.pageSize ? parseInt(req.query.pageSize) : Constants.PAGINATION_PAGE_SIZE;
+        const offset = pageNum * pageSize;
         let result;
         if (req._user.role == 1 || req._user.role == 2) {
-            result = await this.projectUtils.getProjectsByOrg(req._user.organization);
+            result = await this.projectUtils.getProjectsByOrg(req._user.organization, offset, pageSize);
         }else{
-            result = await this.projectUtils.getProjects(req._user.id);
+            result = await this.projectUtils.getProjects(req._user.id, offset, pageSize);
         }
         if(result){
             res.status(Constants.SUCCESS_CODE).json({ status: true, data: result });
@@ -35,10 +38,11 @@ export class ProjectController {
     }
     public getTask = async (req: any, res: Response) => {
         const { id = null } = req.params;
-        const page = req.query.page ? parseInt(req.query.page) : 1;
-        const pageSize = req.query.pageSize ? parseInt(req.query.pageSize) : 100;
+        const pageNum = req.query.page ? parseInt(req.query.page) > 0 ? parseInt(req.query.page) - 1 : 0 : Constants.PAGINATION_PAGE_NUM;
+        const pageSize = req.query.pageSize ? parseInt(req.query.pageSize) : Constants.PAGINATION_PAGE_SIZE;
+        const skip = pageNum * pageSize;
         try {
-            let result = await this.projectUtils.getTask(id, page, pageSize);
+            let result = await this.projectUtils.getTask(id, skip, pageSize);
             res.status(Constants.SUCCESS_CODE).json(result);
         } catch (err) {
             console.log(`Error at getting task, error: ${err}`);
@@ -293,7 +297,7 @@ export class ProjectController {
     public addTestRun = async (req: any, res: Response) => {
         const uuid = uuidv4();
         const { id = null } = req.params;
-        const tasks = await this.projectUtils.getTask(id, 0, 18446744073709551615);
+        const tasks = await this.projectUtils.getTask(id, 0, Constants.PAGTNATION_MAX_PAGE_SIZE);
         if (!tasks.data[0]) {
             res.status(Constants.SUCCESS_CODE).json({ code: 400, msg: 'No test cases found' });
         } else {
@@ -426,7 +430,10 @@ export class ProjectController {
     };
     public getTestRuns = async (req: any, res: Response) => {
         const { id = null } = req.params;
-        let result = await this.projectUtils.getTestRuns(id);
+        const pageNum = req.query.page ? parseInt(req.query.page) > 0 ? parseInt(req.query.page) - 1 : 0 : Constants.PAGINATION_PAGE_NUM;
+        const pageSize = req.query.pageSize ? parseInt(req.query.pageSize) : Constants.PAGINATION_PAGE_SIZE;
+        const offset = pageNum * pageSize;
+        let result = await this.projectUtils.getTestRuns(id, offset, pageSize);
         if(result){
             res.status(Constants.SUCCESS_CODE).json({ status: true, data: result });
         }else{
@@ -445,8 +452,10 @@ export class ProjectController {
 
     public getTestRunsAnalytics = async (req: any, res: Response) => {
         const { id = null } = req.params;
-        const { limit = null } = req.params;
-        let result = await this.projectUtils.getTestRunsAnalytics(id,limit);
+        const pageNum = req.query.page ? parseInt(req.query.page) > 0 ? parseInt(req.query.page) - 1 : 0 : Constants.PAGINATION_PAGE_NUM;
+        const pageSize = req.query.pageSize ? parseInt(req.query.pageSize) : Constants.PAGINATION_PAGE_SIZE;
+        const offset = pageNum * pageSize;
+        let result = await this.projectUtils.getTestRunsAnalytics(id, offset, pageSize);
         if(result){
             res.status(Constants.SUCCESS_CODE).json({ status: true, data: result });
         }else{

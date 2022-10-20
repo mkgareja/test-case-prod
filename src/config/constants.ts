@@ -63,6 +63,10 @@ export class Constants {
   public static readonly EMAIL_REDIRECTION_LINK = 'auth/verify-email';
   public static readonly MEDIA_THUMB_TYPE = 'GENERAL';
 
+  public static readonly PAGINATION_PAGE_NUM = 0;
+  public static readonly PAGINATION_PAGE_SIZE = 50;
+  public static readonly PAGTNATION_MAX_PAGE_SIZE = 1844674407370955161;
+
   public static readonly DAYS = new Enum({
     'weekdays': 'weekdays',
     'saturday': 'saturday',
