@@ -130,5 +130,6 @@
   "ERROR_ADDING_VEHICLE":"Error while adding vehicle",
   "ERROR_FIND_VEHICLE_DATA":"We couldn't find your vehicle data in our system",
   "VERFIY_SERVICE_ACC":"Please verify your account for ServiceOnline",
-  "ERR_VEHICLE_NOT_FOUND":"Vehicle not found"
+  "ERR_VEHICLE_NOT_FOUND":"Vehicle not found",
+  "ORG_NOT_ELIGIBLE": "Your organisation is not eligible for automation requests"
 }

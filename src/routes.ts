@@ -12,6 +12,7 @@ import { StoreRoute } from './modules/store/storeRoute';
 import { AnalyticRoute } from './modules/analytic/analyticRoute';
 import { ReviewRoute } from './modules/review/reviewRoute';
 import { ResultRoute } from './modules/result/resultRoute'
+import { AutomationRoute } from './modules/automation/automationRoute';
 
 export class Routes {
   protected basePath: string;
@@ -47,6 +48,7 @@ export class Routes {
     router.use('/analytics', AnalyticRoute);
     router.use('/review', ReviewRoute);
     router.use('/result', ResultRoute);
+    router.use('/v1/automation', AutomationRoute);
 
 
     router.all('/*', (req: any, res: any) => {

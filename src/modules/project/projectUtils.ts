@@ -165,6 +165,30 @@ export class ProjectUtils {
       return false;
     }
   }
+
+  public async getProject(projectId: any) {
+    const result =  await mysql.findAll(`${Tables.PROJECT} p
+        LEFT JOIN ${Tables.PROJECTUSERS} pu on p.${ProjectTable.ID} = pu.${projectUsersTable.PROJECTID}
+        LEFT JOIN ${Tables.USER} u on u.${UserTable.ID} = pu.${projectUsersTable.USERID}`,[
+      `p.${ProjectTable.ID}`,
+      `p.${ProjectTable.NAME}`,
+      `p.${ProjectTable.TYPE}`,
+      `p.${ProjectTable.DESC}`,
+      `p.${ProjectTable.CREATED_AT}`,
+      `pu.${projectUsersTable.ROLE}`,
+      `(SELECT count(*) FROM ${Tables.TASKS} t where t.${TaskTable.PID} = p.${ProjectTable.ID} AND t.${TaskTable.IS_ENABLE} = 1 AND t.${TaskTable.IS_DELETE} = 0) as testCaseCount`,
+      `COUNT(pu.${projectUsersTable.ID}) as totalUser`,
+      `(SELECT count(*) FROM ${Tables.MERGE} m where m.${TestMergeTable.DESTINATION_PID} = p.${ProjectTable.ID} AND ${TestMergeTable.STATUS}=0) as totalPendingRequest`,
+      `u.${UserTable.FIRSTNAME}`
+    ],
+      `p.${ProjectTable.IS_DELETE} = 0 AND p.${ProjectTable.IS_ENABLE} = 1 AND  p.${ProjectTable.ID} = ?`, [projectId]);
+    if (result.length >= 0) {
+      return result;
+    } else {
+      return false;
+    }
+  }
+
   public async getProjectsByOrg(id: any, offset: number, pageSize: number) {
     try {
       const result =  await mysql.findAll(`${Tables.PROJECT} p

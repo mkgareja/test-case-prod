@@ -160,6 +160,7 @@ export class Middleware {
             if (user || byPassRoutesForVerifiedCheck.includes(req.route.path)) {
               req._user = user;
               req._user.deviceId = tokenInfo.deviceId;
+              req.body._authentication = user;
               next();
             } else {
               res
