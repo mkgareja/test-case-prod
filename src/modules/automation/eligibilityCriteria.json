@@ -1,0 +1,6 @@
+{
+    "automation": {
+        "isAllOrganisationEligible": true,
+        "eligibleOrganisation": ["abc"]
+    }
+}
