@@ -9,6 +9,7 @@ const router: Router = Router();
 const v: Validator = new Validator();
 const resultController = new ResultController();
 
+router.post('/bulk', middleware.getUserAuthorized, resultController.bulkUpdateSubtaskStatus);
 router.post('/:id', middleware.getUserAuthorized, v.validate(ResultModel), resultController.updateSubtaskResult);
 
 export const ResultRoute: Router = router;
