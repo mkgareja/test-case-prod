@@ -55,6 +55,7 @@
     "fcm-node": "^1.5.2",
     "fs": "0.0.1-security",
     "helmet": "^3.22.0",
+    "jira.js": "^2.15.14",
     "jm-ez-l10n": "^1.0.0",
     "jm-ez-mysql": "^3.0.1",
     "jsonwebtoken": "^8.5.1",

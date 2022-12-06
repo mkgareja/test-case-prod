@@ -2,7 +2,7 @@ import * as mysql from 'jm-ez-mysql';
 import * as moment from 'moment';
 
 import { Constants } from '../../config/constants';
-import { Tables, UserTable, DeviceTable,StaticContentTable, ProjectTable,OrganizationTable,OrganizationUsersTable,projectUsersTable, OrgEmailsTable } from '../../config/tables';
+import { Tables, UserTable, DeviceTable,StaticContentTable, IntegrationAuthTable,OrganizationTable,OrganizationUsersTable,projectUsersTable, OrgEmailsTable } from '../../config/tables';
 import { ResponseBuilder } from '../../helpers/responseBuilder';
 import { LoginModel } from './authModel';
 import { SMSUtils } from '../../helpers/smsUtils';
@@ -21,6 +21,21 @@ export class AuthUtils {
     const newUser = await mysql.insert(Tables.ORGANIZATION, userDetail);
     return ResponseBuilder.data({ id: newUser });
   }
+
+  public async createIntigrationOrg(obj: Json,isIntigration:boolean): Promise<ResponseBuilder> {
+    if(isIntigration){
+      const result = await mysql.updateFirst(Tables.INTEGRATION_AUTH, {auth:obj.auth}, `${IntegrationAuthTable.ORGID} = ?`, [obj.orgid]);
+      return ResponseBuilder.data({ id: result });
+    }else{
+      const newResult = await mysql.insert(Tables.INTEGRATION_AUTH, obj);
+      return ResponseBuilder.data({ id: newResult });  
+    }
+  }
+  public async createIntigrationProject(obj: Json): Promise<ResponseBuilder> {
+      const newResult = await mysql.insert(Tables.INTEGRATION_PROJECT_MAPPING, obj);
+      return ResponseBuilder.data({ id: newResult });
+  }
+  
   public async updateOrg(orgId: any, orgInfo: Json): Promise<ResponseBuilder> {
     try {
       const result = await mysql.updateFirst(Tables.ORGANIZATION, orgInfo, `${OrganizationTable.ID} = ?`, [orgId]);

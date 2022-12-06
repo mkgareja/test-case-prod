@@ -11,6 +11,9 @@ export class Tables {
   public static readonly USER = 'users';
   public static readonly STATIC_CONTENT = 'staticcontent';
   public static readonly DEVICE = 'devices';
+  public static readonly INTEGRATION = 'integration';
+  public static readonly INTEGRATION_AUTH = 'integration_auth';
+  public static readonly INTEGRATION_PROJECT_MAPPING = 'integration_project_mapping';
   public static readonly PROJECT = 'projects';
   public static readonly MERGE = 'testmerge';
   public static readonly TASKS = 'tasks';
@@ -122,6 +125,48 @@ export enum PageVisitCountTable {
   CLOSEAT='closeAt',
   CREATED_AT='createdAt',
 }
+
+export enum IntegrationTable {
+  ID= 'id',
+  INTEGRATIONID = 'integrationId',
+  TASKID = 'taskid',
+  SUBTASKID = 'subTaskid',
+  STATUS = 'status',
+  IS_ENABLE = 'isEnable',
+  IS_DELETE = 'isDelete',
+  CREATED_AT = 'createdAt',
+  UPDATED_AT = 'updatedAt',
+  CREATED_BY = 'createdBy',
+  UPDATED_BY = 'updatedBy',
+}
+
+export enum IntegrationAuthTable {
+  ID= 'id',
+  AUTH = 'auth',
+  ORGID = 'orgid',
+  STATUS = 'status',
+  IS_ENABLE = 'isEnable',
+  IS_DELETE = 'isDelete',
+  CREATED_AT = 'createdAt',
+  UPDATED_AT = 'updatedAt',
+  CREATED_BY = 'createdBy',
+  UPDATED_BY = 'updatedBy',
+}
+
+export enum integrationProjectMapping {
+  ID= 'id',
+  INTEGRATIONID = 'integrationId',
+  MAPPING_INFO = 'mapping_info',
+  PROJECTID = 'projectid',
+  STATUS = 'status',
+  IS_ENABLE = 'isEnable',
+  IS_DELETE = 'isDelete',
+  CREATED_AT = 'createdAt',
+  UPDATED_AT = 'updatedAt',
+  CREATED_BY = 'createdBy',
+  UPDATED_BY = 'updatedBy',
+}
+
 export enum ProductreviewTable {
   ID = 'prId',
   RATING = 'rating',
@@ -466,7 +511,8 @@ export enum SubTaskTable {
   PID = 'projectid',
   TID = 'taskid',
   DESC = 'description',
-  FIELD = 'field'
+  FIELD = 'field',
+  INTEGRATION = 'integration'
 }
 
 export enum ResultTable {

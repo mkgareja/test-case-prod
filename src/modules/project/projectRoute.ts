@@ -15,6 +15,11 @@ const v: Validator = new Validator();
 const projectController = new ProjectController();
 
 router.get('/',middleware.getUserAuthorized, projectController.getProject)
+router.get('/task/integration/:id',middleware.getUserAuthorized, projectController.getOrgIntigrationProjectIssues);
+router.get('/integration/:pid',middleware.getUserAuthorized, projectController.getOrgIntigrationProject)
+router.post('/integration/add',middleware.getUserAuthorized, projectController.addIntigrationPoject)
+router.post('/org/integration',middleware.getUserAuthorized, projectController.addIntigrationOrg)
+router.get('/org/integration',middleware.getUserAuthorized, projectController.getOrgIntigration)
 router.get('/org/user/:oid',middleware.getUserAuthorized, projectController.getOrgUsersInvited)
 router.post('/',middleware.getUserAuthorized, v.validate(ProjectModel), projectController.addProject);
 router.post('/name/:id', middleware.getUserAuthorized, projectController.updateProjectName);

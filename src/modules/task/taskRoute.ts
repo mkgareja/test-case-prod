@@ -17,6 +17,7 @@ const v: Validator = new Validator();
 const taskController = new TaskController();
 
 router.post('/subtask',middleware.getUserAuthorized, v.validate(SubTaskModel), taskController.addSubTask);
+router.post('/subtask/integration',middleware.getUserAuthorized, taskController.addSubTaskIntegration);
 router.post('/subtask/:id',middleware.getUserAuthorized, v.validate(SubTaskModel), taskController.updateSubTask);
 router.post('/subtask/status/:id',middleware.getUserAuthorized, taskController.updateSubTaskStatus);
 router.delete('/:id',middleware.getUserAuthorized, taskController.deleteTask);
