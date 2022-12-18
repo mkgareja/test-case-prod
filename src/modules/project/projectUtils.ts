@@ -4,7 +4,7 @@ import { SendEmail } from '../../helpers/sendEmail';
 import { TaskUtils } from './../task/taskUtils';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Tables, UserTable,OrgEmailsTable,TestMergeTable,ProjectTable,TestrunsTable, projectUsersTable,OrganizationUsersTable, TaskTable, SubTaskTable, ResultTable, SubtaskResultsTable, TaskResultTable } from '../../config/tables';
+import { Tables, UserTable,OrgEmailsTable,TestMergeTable,ProjectTable,IntegrationAuthTable, projectUsersTable,OrganizationUsersTable, TaskTable, SubTaskTable, ResultTable, SubtaskResultsTable, TaskResultTable,integrationProjectMapping } from '../../config/tables';
 
 export class ProjectUtils {
   // Get User devices
@@ -256,7 +256,7 @@ export class ProjectUtils {
       [
         `IFNULL(st.${SubTaskTable.FIELD}, p.${ProjectTable.FIELD}) as field, t.${TaskTable.TITLE} as taskTitle, t.${TaskTable.ID} as taskId,
         st.${SubTaskTable.ID} as subtaskId, st.${SubTaskTable.SUB_ID}, st.${SubTaskTable.OS}, st.${SubTaskTable.TITLE} as subTaskTitle, st.${SubTaskTable.BROWSER}, 
-        st.${SubTaskTable.SUMMARY}, st.${SubTaskTable.TESTING}, st.${SubTaskTable.USERNAME}, st.${SubTaskTable.DESC}`
+        st.${SubTaskTable.SUMMARY}, st.${SubTaskTable.TESTING}, st.${SubTaskTable.USERNAME}, st.${SubTaskTable.DESC},st.${SubTaskTable.INTEGRATION}`
       ],
       `t.${TaskTable.IS_DELETE} = 0 AND t.${TaskTable.IS_ENABLE} = 1 AND t.${TaskTable.PID} = ?
       ORDER BY t.${SubTaskTable.CREATED_AT} DESC LIMIT ${offset},${pageSize}`, [id]
@@ -275,6 +275,26 @@ export class ProjectUtils {
       return false;
     }
   }
+  public async getIntigrations(orgId: any) {
+    const result = await mysql.findAll(Tables.INTEGRATION_AUTH,
+      [IntegrationAuthTable.ID,IntegrationAuthTable.AUTH], `${IntegrationAuthTable.IS_DELETE} = 0 AND ${IntegrationAuthTable.IS_ENABLE} = 1 and ${IntegrationAuthTable.ORGID} = ?`, [orgId]);
+    if (result.length >= 0) {
+      return result;
+    } else {
+      return false;
+    }
+  }
+
+  public async getIntigrationsProject(orgId: any) {
+    const result = await mysql.findAll(Tables.INTEGRATION_PROJECT_MAPPING,
+      [integrationProjectMapping.MAPPING_INFO], `${integrationProjectMapping.IS_DELETE} = 0 AND ${integrationProjectMapping.IS_ENABLE} = 1 and ${integrationProjectMapping.PROJECTID} = ?`, [orgId]);
+    if (result.length >= 0) {
+      return result;
+    } else {
+      return false;
+    }
+  }
+
   public async checkUserOrgExists(uid: any,orgId: any) {
     return await mysql.first(
       Tables.ORGANIZATIONUSER,

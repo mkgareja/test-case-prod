@@ -48,7 +48,7 @@ export class App {
         'Access-Control-Allow-Headers',
         'Origin, X-Requested-With, Content-Type, Accept,Access-Control-Allow-Headers, Authorization, token, x-device-type, x-app-version, x-build-number, uuid,x-auth-token, X-L10N-Locale',
       );
-      res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE');
+      res.header('Access-Control-Allow-Methods', 'OPTION,GET, PUT, POST, DELETE');
       if (req.method === 'OPTIONS') {
         res.writeHead(200);
         res.end();
