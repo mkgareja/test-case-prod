@@ -26,6 +26,26 @@ export class ResultUtils {
         }
     }
 
+    public async updateSubtaskResultBySubtaskAndResult(sid: any, rid: any, Info: { testStatus: any; }): Promise<ResponseBuilder> {
+        const sql = `UPDATE subtaskResult SET testStatus = 'fail' WHERE subtaskid = '${sid}' AND resultid = '${rid}' LIMIT 1`
+        const result = await mysql.query(sql);
+        if (result.affectedRows > 0) {  
+            return ResponseBuilder.data({ status: true, res: result });
+        } else {
+            return ResponseBuilder.data({ status: false });
+        }
+    }
+
+    public async getSubtaskResultId(sid: any) {
+        const resultid = await mysql.first(
+            `${Tables.RESULT} r LEFT JOIN ${Tables.SUBTASKS} st ON r.${ResultTable.PID} = st.${SubTaskTable.PID}`,
+            [`r.${ResultTable.ID}`],
+            `st.${SubTaskTable.ID} = ? AND r.${ResultTable.IS_ACTIVE} = 1 AND r.${ResultTable.IS_DELETE} = 0`,
+            [sid]
+        );
+        return resultid.id;
+    }
+
     public async updateAllSubtaskStatus(taskId, Info): Promise<ResponseBuilder> {
         const result = await mysql.update(Tables.SUBTASKRESULTS, Info, `${SubtaskResultsTable.TID} = ?`, [taskId]);
         if (result.affectedRows > 0) {

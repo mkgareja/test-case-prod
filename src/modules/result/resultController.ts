@@ -32,7 +32,11 @@ export class ResultController {
                 testStatus: item.status,
             };
             if ("subtaskId" in item) {
-                const temp = await this.resultUtils.updateSubtaskResult(item.subtaskId, statusObj);
+                const resultId = await this.resultUtils.getSubtaskResultId(item.subtaskId);
+                let temp: ResponseBuilder;
+                if (resultId) {
+                    temp = await this.resultUtils.updateSubtaskResultBySubtaskAndResult(item.subtaskId, resultId, statusObj);
+                }
                 if (temp.result.status == true) {
                     result.push({ subtaskId: item.subtaskId, msg: req.t('SUBTASK_RESULT_UPDATED'), data: temp.result.res});
                 } else {
