@@ -20,4 +20,33 @@ export class ResultController {
             res.status(Constants.NOT_FOUND_CODE).json({ code: Constants.NOT_FOUND_CODE, msg: msg, data: result.result });
         }
     }
+
+    public bulkUpdateSubtaskStatus = async (req: any, res: Response) => {
+        const result = [];
+        const reqBody = req.body;
+        if (reqBody.length > 50) {
+            return res.status(Constants.FAIL_CODE).json({ msg: req.t('BULK_UPDATE_FAIL'), code: Constants.FAIL_CODE });
+        }
+        for (let item of reqBody) {
+            const statusObj = {
+                testStatus: item.status,
+            };
+            if ("subtaskId" in item) {
+                const temp = await this.resultUtils.updateSubtaskResult(item.subtaskId, statusObj);
+                if (temp.result.status == true) {
+                    result.push({ subtaskId: item.subtaskId, msg: req.t('SUBTASK_RESULT_UPDATED'), data: temp.result.res});
+                } else {
+                    result.push({ subtaskId: item.subtaskId, msg: req.t('SUBTASK_RESULT_UPDATE_FAIL'), data: temp.result.res});
+                }
+            } else if ("taskId" in item) {
+                const temp = await this.resultUtils.updateAllSubtaskStatus(item.taskId, statusObj);
+                if (temp.result.status == true) {
+                    result.push({ taskId: item.taskId, msg: req.t('TASK_RESULT_UPDATED'), data: temp.result.res});
+                } else {
+                    result.push({ taskId: item.taskId, msg: req.t('TASK_RESULT_UPDATE_FAILED'), data: temp.result.res});
+                }
+            }
+        }
+        return res.status(Constants.SUCCESS_CODE).json(result);
+    }
 }

@@ -26,6 +26,15 @@ export class ResultUtils {
         }
     }
 
+    public async updateAllSubtaskStatus(taskId, Info): Promise<ResponseBuilder> {
+        const result = await mysql.update(Tables.SUBTASKRESULTS, Info, `${SubtaskResultsTable.TID} = ?`, [taskId]);
+        if (result.affectedRows > 0) {
+          return ResponseBuilder.data({ status: true, data: result });
+        } else {
+          return ResponseBuilder.data({ status: false });
+        }
+      }
+
     private async addTaskResult(projectId: any, resultId: any) {
         const query = `INSERT INTO ${Tables.TASKRESULT}(taskid, projectid, resultid, status, modelId, data, title, createdAt) 
         SELECT id, projectid, '${resultId}', status, modelId, data, title, createdAt FROM tasks where isEnable = 1 and isDelete = 0 and projectid = ?`;
