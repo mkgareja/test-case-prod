@@ -19,7 +19,8 @@ router.get('/task/integration/:id',middleware.getUserAuthorized, projectControll
 router.get('/integration/:pid',middleware.getUserAuthorized, projectController.getOrgIntigrationProject)
 router.post('/integration/add',middleware.getUserAuthorized, projectController.addIntigrationPoject)
 router.post('/org/integration',middleware.getUserAuthorized, projectController.addIntigrationOrg)
-router.get('/org/integration',middleware.getUserAuthorized, projectController.getOrgIntigration)
+router.get('/org/integration/asana/:wid',middleware.getUserAuthorized, projectController.getAsanaProjects)
+router.get('/org/integration/:type',middleware.getUserAuthorized, projectController.getOrgIntigration)
 router.get('/org/user/:oid',middleware.getUserAuthorized, projectController.getOrgUsersInvited)
 router.post('/',middleware.getUserAuthorized, v.validate(ProjectModel), projectController.addProject);
 router.post('/name/:id', middleware.getUserAuthorized, projectController.updateProjectName);

@@ -1,4 +1,5 @@
 import { Version3Client } from 'jira.js';
+import asana = require("asana");
 import { Constants } from '../../config/constants';
 import { Request, Response } from 'express';
 import { ProjectUtils } from './projectUtils';
@@ -307,15 +308,27 @@ export class ProjectController {
          };
          public addIntigrationOrg = async (req: any, res: Response) => {
            try {
-             let objOrg = {
-               id: uuidv4(),
-               auth: JSON.stringify({
-                 domain: req.body.domain,
-                 key: req.body.key,
-                 email: req.body.email,
-               }),
-               orgid: req.body.orgId,
-             };
+             let objOrg;
+             if (req.body.type && req.body.type === "asana") {
+               objOrg = {
+                 id: uuidv4(),
+                 auth: JSON.stringify({
+                   key: req.body.key,
+                 }),
+                 orgid: req.body.orgId,
+                 type: "asana"
+               };
+             } else {
+               objOrg = {
+                 id: uuidv4(),
+                 auth: JSON.stringify({
+                   domain: req.body.domain,
+                   key: req.body.key,
+                   email: req.body.email
+                 }),
+                 orgid: req.body.orgId
+               };
+             }
 
              const result: ResponseBuilder = await this.authUtils.createIntigrationOrg(
                objOrg,
@@ -325,14 +338,12 @@ export class ProjectController {
              if (req.body.isIntigration) {
                msg = "Intigration updated successfully";
              }
-             res
-               .status(Constants.SUCCESS_CODE)
-               .json({
-                 code: 200,
-                 msg: msg,
-                 domain: req.body.domain,
-                 email: req.body.email,
-               });
+             res.status(Constants.SUCCESS_CODE).json({
+               code: 200,
+               msg: msg,
+               domain: req.body.domain,
+               email: req.body.email,
+             });
            } catch (error) {
              res
                .status(Constants.FAIL_CODE)
@@ -347,6 +358,7 @@ export class ProjectController {
                mapping_info: JSON.stringify(req.body.mapping_info),
                orgid: req.body.orgId,
                projectid: req.body.pid,
+               type:req.body.type
              };
 
              const result: ResponseBuilder = await this.authUtils.createIntigrationProject(
@@ -372,45 +384,158 @@ export class ProjectController {
            let result = await this.projectUtils.getIntigrations(
              req._user.organization
            );
+           const type = (result && result[0] && result[0].type)?result[0].type:req.params.type;
+           if (type === "asana") {
+             console.log(result);
+             let asanaData = result.filter((x: any) => x.type === "asana");
+             if (asanaData && asanaData.length > 0) {
+               var personalAccessToken =JSON.parse(asanaData[0].auth).key;
+               var client = asana.Client.create().useAccessToken(
+                 personalAccessToken
+               );
 
-           if (result) {
-             let projects;
-             const host = `https://${
-               JSON.parse(result[0].auth).domain
-             }.atlassian.net`;
-             const email = `${JSON.parse(result[0].auth).email}`;
-             const apiToken = `${JSON.parse(result[0].auth).key}`;
-
-             const client = new Version3Client({
-               host,
-               authentication: {
-                 basic: { email, apiToken },
-               },
-               newErrorHandling: true,
-             });
-
-             projects = await client.projects.getAllProjects();
-             if (projects.length) {
-               projects = projects.map((iteam) => ({
-                 label: iteam.name,
-                 value: iteam.key,
-               }));
+               client.workspaces
+                 .getWorkspaces({ opt_pretty: true })
+                 .then((result: any) => {
+                   if (result && result.data.length) {
+                     let projects = result.data.map((iteam) => ({
+                       label: iteam.name,
+                       value: iteam.gid,
+                     }));
+                     res.status(Constants.SUCCESS_CODE).json({
+                       code: 200,
+                       status: true,
+                       data: true,
+                      //  key: JSON.parse(asanaData[0].auth).key,
+                       projects,
+                       type,
+                     });
+                   } else {
+                     res
+                       .status(Constants.NOT_FOUND_CODE)
+                       .json({
+                         code: 400,
+                         status: false,
+                         error: req.t("NO_DATA"),
+                       });
+                   }
+                 });
+             } else {
+               res
+                 .status(Constants.NOT_FOUND_CODE)
+                 .json({ code: 400, status: false, error: req.t("NO_DATA") });
              }
+           }else if(type === "jira") {
+             let jiraData = result.filter((x: any) => x.type === "jira");
 
-             res.status(Constants.SUCCESS_CODE).json({
-               code: 200,
-               status: true,
-               data: true,
-               domain: JSON.parse(result[0].auth).domain,
-               email: JSON.parse(result[0].auth).email,
-               projects,
-             });
-           } else {
-             res
-               .status(Constants.NOT_FOUND_CODE)
-               .json({ code: 400, status: false, error: req.t("NO_DATA") });
+             if (jiraData && jiraData.length > 0) {
+               let projects;
+               const host = `https://${
+                 JSON.parse(jiraData[0].auth).domain
+               }.atlassian.net`;
+               const email = `${JSON.parse(jiraData[0].auth).email}`;
+               const apiToken = `${JSON.parse(jiraData[0].auth).key}`;
+
+               const client = new Version3Client({
+                 host,
+                 authentication: {
+                   basic: { email, apiToken },
+                 },
+                 newErrorHandling: true,
+               });
+
+               projects = await client.projects.getAllProjects();
+               if (projects.length) {
+                 projects = projects.map((iteam) => ({
+                   label: iteam.name,
+                   value: iteam.key,
+                 }));
+               }
+
+               res.status(Constants.SUCCESS_CODE).json({
+                 code: 200,
+                 status: true,
+                 data: true,
+                 domain: JSON.parse(jiraData[0].auth).domain,
+                 email: JSON.parse(jiraData[0].auth).email,
+                 projects,
+                 type,
+               });
+             } else {
+               res
+                 .status(Constants.NOT_FOUND_CODE)
+                 .json({ code: 400, status: false, error: req.t("NO_DATA") });
+             }
+           }else{
+            let result = await this.projectUtils.getIntigrations(
+              req._user.organization
+            );
+            res.status(Constants.SUCCESS_CODE).json({
+              code: 200,
+              status: true,
+              data: result,
+              type
+            });
            }
          };
+
+         public getAsanaProjects = async (req: any, res: Response) => {
+          let result = await this.projectUtils.getIntigrations(
+            req._user.organization
+          );
+          // const type = (result && result[0] && result[0].type)?result[0].type:req.params.type;
+          if (result) {
+            console.log(result);
+            let asanaData = result.filter((x: any) => x.type === "asana");
+            if (asanaData && asanaData.length > 0) {
+              var personalAccessToken =JSON.parse(asanaData[0].auth).key;
+              var client = asana.Client.create().useAccessToken(
+                personalAccessToken
+              );
+              
+              client.projects.findAll({
+                workspace:req.params.wid
+              },{ opt_pretty: true})
+                .then((result: any) => {
+                  if (result && result.data.length) {
+                    let projects = result.data.map((iteam) => ({
+                      label: iteam.name,
+                      value: iteam.gid,
+                    }));
+                    res.status(Constants.SUCCESS_CODE).json({
+                      code: 200,
+                      status: true,
+                      data: true,
+                     //  key: JSON.parse(asanaData[0].auth).key,
+                      projects
+                    });
+                  } else {
+                    res
+                      .status(Constants.NOT_FOUND_CODE)
+                      .json({
+                        code: 400,
+                        status: false,
+                        error: req.t("NO_DATA"),
+                      });
+                  }
+                });
+            } else {
+              res
+                .status(Constants.NOT_FOUND_CODE)
+                .json({ code: 400, status: false, error: req.t("NO_DATA") });
+            }
+          }else{
+           let result = await this.projectUtils.getIntigrations(
+             req._user.organization
+           );
+           res.status(Constants.SUCCESS_CODE).json({
+             code: 200,
+             status: true,
+             data: result
+           });
+          }
+        };
+
 
          public getOrgIntigrationProject = async (req: any, res: Response) => {
            let result = await this.projectUtils.getIntigrations(
@@ -425,7 +550,7 @@ export class ProjectController {
                pid
              );
 
-             if (result_mapping) {
+             if (result_mapping && result_mapping.length>0) {
                mapping_info = result_mapping[0].mapping_info;
                isProjectIntigration = true;
              } else {
@@ -452,51 +577,110 @@ export class ProjectController {
            req: any,
            res: Response
          ) => {
-          try {
-            let result = await this.projectUtils.getIntigrations(
-              req._user.organization
-            );
-            let isProjectIntigration=false;
-            if (result) {
-              let issues;
-              let mapping_info;
-              
-              const { id = null } = req.params;
-              let result_mapping = await this.projectUtils.getIntigrationsProject(
-                id
-              );
- 
-              if (result_mapping) {
-                mapping_info = result_mapping[0].mapping_info;
-                isProjectIntigration = true;
-                const host = `https://${
-                  JSON.parse(result[0].auth).domain
-                }.atlassian.net`;
-                const email = `${JSON.parse(result[0].auth).email}`;
-                const apiToken = `${JSON.parse(result[0].auth).key}`;
-                const project_label = JSON.parse(result_mapping[0].mapping_info)
-                  .label;
- 
-                const client = new Version3Client({
-                  host,
-                  authentication: {
-                    basic: { email, apiToken },
-                  },
-                  newErrorHandling: true,
-                });
-                issues = await client.issueSearch.searchForIssuesUsingJql({
-                  jql: `project = ${project_label}`,
-                });
- 
-                if (issues) {
-                  issues = issues.issues;
-                  issues = await issues.map((e) => e.key);
-                }
-              } else {
-                isProjectIntigration = false;
-              }
- 
-              res.status(Constants.SUCCESS_CODE).json({
+           try {
+             let result = await this.projectUtils.getIntigrations(
+               req._user.organization
+             );
+             let isProjectIntigration = false;
+             let jiraData = result.filter((x: any) => x.type === "jira");
+             let asanaData = result.filter((x: any) => x.type === "asana");
+             if (jiraData && jiraData[0] && jiraData[0].type=== 'jira') {
+               let issues;
+               let mapping_info;
+
+               const { id = null } = req.params;
+               let result_mapping = await this.projectUtils.getIntigrationsProject(
+                 id
+               );
+
+               if (result_mapping && result_mapping.length>0) {
+                 mapping_info = result_mapping[0].mapping_info;
+                 isProjectIntigration = true;
+                 const host = `https://${
+                   JSON.parse(result[0].auth).domain
+                 }.atlassian.net`;
+                 const email = `${JSON.parse(result[0].auth).email}`;
+                 const apiToken = `${JSON.parse(result[0].auth).key}`;
+                 const project_label = JSON.parse(
+                   result_mapping[0].mapping_info
+                 ).label;
+
+                 const client = new Version3Client({
+                   host,
+                   authentication: {
+                     basic: { email, apiToken },
+                   },
+                   newErrorHandling: true,
+                 });
+                 issues = await client.issueSearch.searchForIssuesUsingJql({
+                   jql: `project = ${project_label}`,
+                 });
+
+                 if (issues) {
+                   issues = issues.issues;
+                   issues = await issues.map((e) => e.key);
+                 }
+               } else {
+                 isProjectIntigration = false;
+               }
+
+               res.status(Constants.SUCCESS_CODE).json({
+                 code: 200,
+                 status: true,
+                 data: true,
+                 domain: JSON.parse(result[0].auth).domain || "",
+                 email: JSON.parse(result[0].auth).email || "",
+                 isProjectIntigration,
+                 mapping_info,
+                 issues,
+                 type:jiraData[0].type
+               });
+             }else if (asanaData && asanaData[0] && asanaData[0].type=== 'asana'){
+               let issues;
+               let mapping_info;
+
+               const { id = null } = req.params;
+               let result_mapping = await this.projectUtils.getIntigrationsProject(
+                 id
+               );
+
+               if (result_mapping && result_mapping.length>0) {
+                 mapping_info = result_mapping[0].mapping_info;
+                 isProjectIntigration = true;
+                //  const host = `https://${
+                //    JSON.parse(result[0].auth).domain
+                //  }.atlassian.net`;
+                //  const email = `${JSON.parse(result[0].auth).email}`;
+                //  const apiToken = `${JSON.parse(result[0].auth).key}`;
+                //  const project_label = JSON.parse(
+                //    result_mapping[0].mapping_info
+                //  ).label;
+
+                 var personalAccessToken =JSON.parse(result[0].auth).key;
+                 var client = asana.Client.create().useAccessToken(
+                   personalAccessToken
+                 );
+                 const pid = JSON.parse(mapping_info).asana;
+                 client.tasks.findByProject(pid.value).then((resultAsana: any) => {
+                  if (resultAsana && resultAsana.data.length) {
+                    res.status(Constants.SUCCESS_CODE).json({
+                      code: 200,
+                      status: true,
+                      data: true,
+                      domain: JSON.parse(result[0].auth).domain || "",
+                      email: JSON.parse(result[0].auth).email || "",
+                      isProjectIntigration,
+                      mapping_info,
+                      issues:resultAsana.data,
+                      type:asanaData[0].type
+                    });
+                  }
+                })
+                
+               } else {
+                 isProjectIntigration = false;
+
+               res.status(Constants.SUCCESS_CODE).json({
                 code: 200,
                 status: true,
                 data: true,
@@ -506,17 +690,24 @@ export class ProjectController {
                 mapping_info,
                 issues,
               });
-            } else {
-              res
-                .status(Constants.SUCCESS_CODE)
-                .json({ code: 400, isProjectIntigration,status: false, error: req.t("NO_DATA") });
-            } 
-          } catch (error) {
-            res
-                .status(Constants.SUCCESS_CODE)
-                .json({ code: 400, isProjectIntigration:false,status: false, error: error });
-          }
-           
+               }
+
+             }else {
+               res.status(Constants.SUCCESS_CODE).json({
+                 code: 400,
+                 isProjectIntigration,
+                 status: false,
+                 error: req.t("NO_DATA"),
+               });
+             }
+           } catch (error) {
+             res.status(Constants.SUCCESS_CODE).json({
+               code: 400,
+               isProjectIntigration: false,
+               status: false,
+               error: error,
+             });
+           }
          };
 
          public removeEmailOrg = async (req: any, res: Response) => {

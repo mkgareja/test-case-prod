@@ -277,7 +277,7 @@ export class ProjectUtils {
   }
   public async getIntigrations(orgId: any) {
     const result = await mysql.findAll(Tables.INTEGRATION_AUTH,
-      [IntegrationAuthTable.ID,IntegrationAuthTable.AUTH], `${IntegrationAuthTable.IS_DELETE} = 0 AND ${IntegrationAuthTable.IS_ENABLE} = 1 and ${IntegrationAuthTable.ORGID} = ?`, [orgId]);
+      [IntegrationAuthTable.ID,IntegrationAuthTable.AUTH,IntegrationAuthTable.TYPE], `${IntegrationAuthTable.IS_DELETE} = 0 AND ${IntegrationAuthTable.IS_ENABLE} = 1 and ${IntegrationAuthTable.ORGID} = ?`, [orgId]);
     if (result.length >= 0) {
       return result;
     } else {

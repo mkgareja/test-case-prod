@@ -1,6 +1,7 @@
 import { Version3Client } from 'jira.js';
 import { Constants } from '../../config/constants';
 import { Request, Response } from 'express';
+import asana = require("asana");
 import { TaskUtils } from './taskUtils';
 import { v4 as uuidv4 } from 'uuid';
 import { ResponseBuilder } from '../../helpers/responseBuilder';
@@ -98,14 +99,112 @@ export class TaskController {
                req._user.organization
              );
              //isLink=false,issueKey
+             const type =
+               result && result[0] && result[0].type ? result[0].type : "";
+             if (result && type === "asana") {
+               let SubTaskResult = await this.taskUtils.getSubTasksIntegration(
+                 req.body.subid
+               );
+               
+               let result_mapping = await this.projectUtils.getIntigrationsProject(
+                 req.body.projectid
+               );
+               const worspace_key = JSON.parse(result_mapping[0].mapping_info)
+                 .value;
+               const project_key = JSON.parse(result_mapping[0].mapping_info)
+                 .asana.value;
+               let asanaData = result.filter((x: any) => x.type === "asana");
 
-             if (result) {
+               if (req.body.isLink) {
+                if (req.body.issueKey) {
+                  const result: ResponseBuilder = await this.taskUtils.updateSubTaskIntegration(
+                    req.body.subid,
+                    {
+                      integration: JSON.stringify({
+                        type: "asana",
+                        value: req.body.issueKey.value,
+                        project_key,
+                        worspace_key
+                      }),
+                    }
+                  );
+                  if (result) {
+                    const msg = "Issue created successfully";
+                    res.status(Constants.SUCCESS_CODE).json({
+                      code: 200,
+                      msg: msg,
+                      data: req.body.issueKey.value,
+                    });
+                  } else {
+                    res.status(Constants.NOT_FOUND_CODE).json(result);
+                  }
+                } else {
+                  res.status(Constants.NOT_FOUND_CODE).json(result);
+                }
+              }else{
+                if (asanaData && asanaData.length > 0) {
+                  var personalAccessToken = JSON.parse(asanaData[0].auth).key;
+                  var client = asana.Client.create().useAccessToken(
+                    personalAccessToken
+                  );
+ 
+                  const tmpResult = await client.tasks
+                    .create(
+                      {
+                        approval_status: "pending",
+                        // assignee?: string | undefined,
+                        // assignee_section?: string | undefined,
+                        // assignee_status: string, // deprecated - use assignee_section
+                        completed: false,
+                        // hearted?: boolean | undefined, // deprecated and removed from documentation
+                        // custom_fields?: { [index: string]: number | string } | undefined,
+                        // due_at: "2024-09-15T02:06:58.147Z",
+                        // due_on: "2024-10-15T02:06:58.147Z",
+                        // followers?: string[] | undefined, // create-only
+                        html_notes: `<body>${SubTaskResult[0].description} ${SubTaskResult[0].title}</body>`,
+                        // liked: true,
+                        name: SubTaskResult[0].title || SubTaskResult[0].summary,
+                        notes:SubTaskResult[0].title || SubTaskResult[0].summary,
+                        // parent?: string | undefined,
+                        projects: [project_key],
+                        resource_subtype: "default_task",
+                        // start_at?: string | null | undefined,
+                        // start_on?: string | null | undefined,
+                        // tags?: string[] | undefined, // create-only
+                        workspace: worspace_key,
+                      },
+                      { opt_pretty: true }
+                    )
+                   //  .then((result11) => {
+                   //    console.log("result1.data", result11);
+                      const msg = "Issue created successfully";
+                      const result: ResponseBuilder = await this.taskUtils.updateSubTaskIntegration(
+                       req.body.subid,
+                       {
+                         integration: JSON.stringify({
+                           type: "asana",
+                           value: tmpResult.gid,
+                           project_key,
+                         }),
+                       }
+                     );
+                      res.status(Constants.SUCCESS_CODE).json({
+                        code: 200,
+                        msg: msg,
+                        data: tmpResult.gid,
+                      });
+                   //  })
+                }
+              }
+               
+             } else if (result && type === "jira") {
                let SubTaskResult = await this.taskUtils.getSubTasksIntegration(
                  req.body.subid
                );
                const host = `https://${
                  JSON.parse(result[0].auth).domain
                }.atlassian.net`;
+               const domainForDb = JSON.parse(result[0].auth).domain;
                const email = `${JSON.parse(result[0].auth).email}`;
                const apiToken = `${JSON.parse(result[0].auth).key}`;
                let result_mapping = await this.projectUtils.getIntigrationsProject(
@@ -126,17 +225,16 @@ export class TaskController {
                        }),
                      }
                    );
-                   if(result){
-                    const msg = "Issue created successfully";
-                   res.status(Constants.SUCCESS_CODE).json({
-                     code: 200,
-                     msg: msg,
-                     data: req.body.issueKey.value,
-                   });
-                   }else{
-                    res.status(Constants.NOT_FOUND_CODE).json(result);
+                   if (result) {
+                     const msg = "Issue created successfully";
+                     res.status(Constants.SUCCESS_CODE).json({
+                       code: 200,
+                       msg: msg,
+                       data: req.body.issueKey.value,
+                     });
+                   } else {
+                     res.status(Constants.NOT_FOUND_CODE).json(result);
                    }
-                   
                  } else {
                    res.status(Constants.NOT_FOUND_CODE).json(result);
                  }
@@ -150,7 +248,8 @@ export class TaskController {
                  });
                  const { id } = await client.issues.createIssue({
                    fields: {
-                     summary:SubTaskResult[0].title || SubTaskResult[0].summary,
+                     summary:
+                       SubTaskResult[0].title || SubTaskResult[0].summary,
                      description: `${SubTaskResult[0].description} ${SubTaskResult[0].title}`,
                      issuetype: {
                        name: "Bug",
@@ -172,6 +271,7 @@ export class TaskController {
                          type: "jira",
                          value: issuenew.key,
                          project_key,
+                         domain:domainForDb
                        }),
                      }
                    );

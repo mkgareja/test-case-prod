@@ -20,6 +20,7 @@
   "author": "SA Team",
   "license": "ISC",
   "dependencies": {
+    "@types/asana": "^0.18.11",
     "@types/bcryptjs": "^2.4.2",
     "@types/body-parser": "^1.19.0",
     "@types/compression": "^1.7.0",
@@ -35,6 +36,7 @@
     "@types/node-uuid": "0.0.28",
     "@types/npm": "^2.0.31",
     "@types/stripe": "^7.13.23",
+    "asana": "^1.0.0",
     "awesome-phonenumber": "^2.30.0",
     "aws-sdk": "^2.661.0",
     "bcryptjs": "^2.4.3",

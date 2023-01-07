@@ -143,6 +143,7 @@ export enum IntegrationTable {
 export enum IntegrationAuthTable {
   ID= 'id',
   AUTH = 'auth',
+  TYPE = 'type',
   ORGID = 'orgid',
   STATUS = 'status',
   IS_ENABLE = 'isEnable',

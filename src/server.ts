@@ -91,7 +91,7 @@ export class App {
       this.logger.info(`The server is running in port localhost: ${process.env.PORT}`);
       this.app.use((err: any, req: any, res: any, next: () => void) => {
         if (err) {
-          this.logger.info(`Error main: ${err.message}`);
+          this.logger.info(`Error main: ${err}`);
           res.status(500).json({ error: req.t('ERR_INTERNAL_SERVER') });
           SendEmail.sendRawMail(
             null,

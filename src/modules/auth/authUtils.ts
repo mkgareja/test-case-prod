@@ -24,7 +24,7 @@ export class AuthUtils {
 
   public async createIntigrationOrg(obj: Json,isIntigration:boolean): Promise<ResponseBuilder> {
     if(isIntigration){
-      const result = await mysql.updateFirst(Tables.INTEGRATION_AUTH, {auth:obj.auth}, `${IntegrationAuthTable.ORGID} = ?`, [obj.orgid]);
+      const result = await mysql.updateFirst(Tables.INTEGRATION_AUTH, {auth:obj.auth}, `${IntegrationAuthTable.ORGID} = ? and ${IntegrationAuthTable.TYPE} = ?`, [obj.orgid,obj.type]);
       return ResponseBuilder.data({ id: result });
     }else{
       const newResult = await mysql.insert(Tables.INTEGRATION_AUTH, obj);
